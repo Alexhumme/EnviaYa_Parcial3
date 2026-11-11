@@ -52,9 +52,11 @@ def calc(p, z, c, d, cup=None, flag=False):
         t = t - t * 0.05
     if c == "vip":
         t = t - t * CONFIG["DESC_VIP"]
-    if cup != None:
+    if cup is not None:
         if cup == "ENVIO10":
             t = t - t * 0.10
+        else:
+            raise ValueError("cupon no existe")  # F impar: error
     # fin de semana (E impar: el recargo se suma despues de los descuentos)
     if d >= 6:  # sabado y domingo son fin de semana
         t = t + CONFIG["RECARGO_FINDE"]
