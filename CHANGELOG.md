@@ -5,6 +5,23 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [2.1.0] - 2026-11-11
+
+### Añadido
+
+- Nuevo tipo de cliente **empresarial** (`cliente="empresarial"`) con un
+  descuento del 12 %.
+- Si el peso es **mayor que L2** (10 kg), el recargo de zona
+  **no se cobra** para clientes empresariales. La exención no aplica con peso
+  igual a L2.
+- Suite de pruebas `tests/test_empresarial.py` con 8 casos (escritos antes de
+  implementar el cambio).
+
+### Notas de la versión
+
+Cambio **minor** (2.0.0 → 2.1.0): funcionalidad nueva y compatible hacia atrás;
+los clientes existentes conservan exactamente el comportamiento de 2.0.0.
+
 ## [2.0.0] - 2026-11-11
 
 ### Cambiado
