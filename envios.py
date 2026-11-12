@@ -24,6 +24,8 @@
 - B = 1 -> Se aplican ambos: primero el del cliente y luego el cupón 
 - F = 3 -> Es error
 '''
+from decimal import Decimal, ROUND_HALF_UP
+
 CONFIG = {
 "L1": 3, # <- pon tus valores
 "L2": 10,
@@ -69,4 +71,5 @@ def calc(p, z, c, d, cup=None, flag=False):
         t = 5000
     if flag:
         print("costo:", t)
-    return int(t / 100) * 100
+    # R8: redondeo al multiplo de $100 mas cercano, los $50 redondean hacia arriba
+    return int((Decimal(str(t)) / Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)) * 100
