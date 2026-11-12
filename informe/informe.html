@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe Parcial 3 — EnvíaYa · Calidad y mantenimiento del calculador de envíos</title>
+<style>
+@page {
+  size: letter;
+  margin: 0.72in 0.82in 0.72in 0.72in;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "Times New Roman", serif;
+  font-size: 10pt;
+  color: #1a2b3c;
+  line-height: 1.32;
+  margin: 0 0 0 0.34in;
+}
+code, pre, .mono { font-family: Consolas, "Courier New", monospace; }
+pre {
+  background: #f4f6f8;
+  border: 1px solid #dde3ea;
+  border-left: 3.5px solid #17324d;
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 7.7pt;
+  line-height: 1.28;
+  white-space: pre-wrap;
+}
+code { background: #eef1f5; padding: 0 4px; border-radius: 3px; font-size: 9pt; }
+h1 {
+  font-size: 17pt; color: #17324d;
+  margin: 22px 0 10px 0;
+  padding-bottom: 4px;
+  border-bottom: 1.6px solid #236b65;
+  page-break-after: avoid;
+  letter-spacing: 0.1px;
+}
+h2 { font-size: 12pt; color: #236b65; margin: 16px 0 7px 0; page-break-after: avoid; }
+h3 { font-size: 10.5pt; color: #36566f; margin: 12px 0 6px 0; page-break-after: avoid; }
+p { margin: 6px 0; text-align: justify; }
+ul, ol { margin: 6px 0 8px 18px; }
+li { margin: 3px 0; text-align: justify; }
+.small { font-size: 8.5pt; color: #4a5a6a; }
+.kpi { color: #17324d; font-weight: bold; }
+table { width: 100%; border-collapse: collapse; font-size: 8.7pt; margin: 10px 0; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
+caption { caption-side: top; text-align: left; font-weight: bold; color: #4f81bd; font-size: 8pt; margin-bottom: 4px; }
+th {
+  background: #17324d; color: #fff; font-size: 8.5pt;
+  padding: 5px 6px; text-align: left; border: 1px solid #10243a;
+}
+td { border: 1px solid #c9d3e0; padding: 5px 6px; vertical-align: top; }
+tbody tr:nth-child(even) { background: #f8fafc; }
+tr.total td { background: #eaf0f8 !important; font-weight: bold; }
+td.center { text-align: center; }
+.tag { display:inline-block; padding:1px 7px; border-radius:9px; font-size:7.5pt; font-weight:bold; }
+.tag-ok { background:#e2f3e7; color:#1e6f5c; border:1px solid #bfe3cd; }
+.tag-err { background:#fde9e9; color:#b91c1c; border:1px solid #f3c1c1; }
+.tag-warn { background:#fff3cd; color:#8a6d1a; border:1px solid #ecd98c; }
+.tag-info { background:#e8f0fe; color:#1a3a5f; border:1px solid #c3d7f5; }
+.callout {
+  background: #eef4fb; border-left: 4px solid #236b65;
+  padding: 8px 12px; margin: 10px 0; font-size: 9.5pt;
+  page-break-inside: avoid;
+}
+.warn { background: #fdf6e7; border-left: 4px solid #b8860b; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+.figure { text-align: center; margin: 12px 0; page-break-inside: avoid; }
+.figure img { max-width: 100%; }
+.caption { text-align: center; font-weight: bold; color: #4f81bd; font-size: 8pt; margin-top: 2px; }
+.kpiRow { display: flex; gap: 10px; margin: 10px 0; }
+.kpiCard {
+  flex: 1; background: #f4f8fc; border: 1px solid #d5e0ec; border-top: 3px solid #236b65;
+  border-radius: 4px; padding: 8px 10px; text-align: center; page-break-inside: avoid;
+}
+.kpiCard .n { font-size: 15pt; font-weight: bold; color: #17324d; display:block; white-space: nowrap; }
+.kpiCard .l { font-size: 7.6pt; color: #4a5a6a; }
+/* ---------- portada ---------- */
+.cover { text-align: center; padding-top: 6px; page-break-after: always; }
+.cover .uni { font-size: 16pt; font-weight: bold; color: #17324d; letter-spacing: 0.5px; margin-top: 18px; }
+.cover .prog { font-size: 12pt; color: #36566f; margin-bottom: 34px; }
+.cover .tipo { font-size: 15pt; font-weight: bold; color: #236b65; letter-spacing: 4px; margin: 22px 0 8px 0; }
+.cover h1.title {
+  font-size: 25pt; border: none; margin: 10px 40px 4px 40px; padding: 0;
+  line-height: 1.28; color: #17324d;
+}
+.cover .subtitle { font-size: 11pt; color: #36566f; margin: 4px 60px 0 60px; font-style: italic; }
+.cover .block { margin-top: 26px; font-size: 11pt; }
+.cover .block b { color: #17324d; }
+.cover .meta { margin-top: 20px; font-size: 10pt; color: #36566f; }
+.cover .code { font-size: 10pt; color: #36566f; margin-top: 4px; }
+.hr { border: none; border-top: 1px solid #c9d3e0; margin: 14px auto; width: 60%; }
+/* ---------- indice ---------- */
+.toc { font-size: 9.6pt; }
+.toc ol { list-style: none; margin: 8px 0 0 0; padding: 0; }
+.toc li { margin: 2.5px 0; display: flex; align-items: baseline; }
+.toc a { text-decoration: none; color: #17324d; display: flex; width: 100%; align-items: baseline; }
+.toc .t { padding-right: 6px; }
+.toc .dots { flex: 1; border-bottom: 1.2px dotted #9db2c9; transform: translateY(-3px); }
+.toc .pg { padding-left: 6px; color: #17324d; font-weight: bold; }
+.toc .lvl2 { padding-left: 18px; font-size: 9pt; }
+.pagenum { font-variant-numeric: tabular-nums; }
+.strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0.27in;
+  height: 100%;
+  background-image: url("assets/image2.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+/* tablas de casos: tipografia compacta */
+.matrix td { font-size: 7.9pt; padding: 3px 5px; }
+.matrix th { font-size: 8pt; }
+.defects td { font-size: 7.8pt; padding: 4px 5px; }
+</style>
+</head>
+<body>
+<div class="strip"></div>
+
+<!-- ============================== PORTADA ============================== -->
+<section class="cover">
+  <div class="uni">UNIVERSIDAD DE LA GUAJIRA</div>
+  <div class="prog">PROGRAMA DE INGENIERÍA DE SISTEMAS</div>
+  <div class="tipo">INFORME</div>
+  <h1 class="title">Calidad y mantenimiento del calculador de envíos de EnvíaYa</h1>
+  <div class="subtitle">Requisitos, pruebas de caja negra y caja blanca, corrección de defectos, refactorización con patrón Estrategia, gestión de configuración y evolución del sistema de costos de EnvíaYa</div>
+
+  <div class="block">
+    <b>Autor</b><br>
+    Alex Valdelamar Bustamante
+    <div class="code">Código estudiantil: 0182410133</div>
+  </div>
+
+  <div class="block" style="margin-top: 26px; font-size: 10pt;">
+    Asignatura: <b>Ingeniería de Software I</b> (273365)<br>
+    Grupo · Semestre: <b>B1 · VI semestre</b><br>
+    Profesor: <b>Ing. Robert Damián Quintero Laverde</b><br>
+    Periodo: <b>2026-2 · Tercer corte</b>
+  </div>
+
+  <div class="hr"></div>
+  <div class="meta">Riohacha, La Guajira<br>2026</div>
+</section>
+
+<!-- ============================== RESUMEN ============================== -->
+<h1 id="resumen" style="border-bottom: none;">Resumen ejecutivo<span style="font-size:1px; color:#ffffff;">§MARK_resumen§</span></h1>
+<p>EnvíaYa es una empresa de envíos de Riohacha cuyo sistema calcula el costo de cada envío con una función que dejó escrita un desarrollador que ya no trabaja allí. El código llegó a mis manos tal como estaba: funcionaba «a medias», tenía defectos frente a la especificación propia que me correspondió (código estudiantil 0182410133), malas prácticas y deuda técnica. En este informe documento el trabajo completo que hice para ponerlo en orden, siguiendo las ocho partes del enunciado del parcial: la especificación y las historias de usuario, el plan de pruebas, el diseño de casos de caja negra y de caja blanca, la automatización con pytest y el reporte de defectos, las correcciones y la refactorización con patrón Estrategia, la gestión de configuración con Git y la solicitud de cambio que me asignó la fórmula <code>(A + F) mod 3 = 1</code> (nuevo cliente empresarial).</p>
+<p>Encontré 6 defectos funcionales respecto a mi especificación. Los más costosos para la empresa: el recargo de fin de semana solo aplicaba el domingo, no se cobraba nada de fin de semana con el cliente correcto en sábado, el límite del tramo 1 estaba incluido aunque mi dígito D exige excluirlo, y el resultado se redondeaba truncando en vez de redondear al múltiplo de $100 más cercano. Las 32 pruebas que escribí fallaron 18 veces contra el código heredado y pasaron las 32 después de las correcciones; la cobertura pasó de 96 % a 100 % (sentencias y ramas). El sistema se versionó como <b>v1.0.0</b> (heredado), <b>v2.0.0</b> (correcciones + refactorización mayor por la eliminación del parámetro <code>flag</code>) y <b>v2.1.0</b> (nuevo cliente empresarial, cambio menor y compatible).</p>
+
+<div class="kpiRow">
+  <div class="kpiCard"><span class="n">6</span><span class="l">defectos hallados y corregidos</span></div>
+  <div class="kpiCard"><span class="n">32 → 40</span><span class="l">casos de prueba (8 nuevos en la Parte 8)</span></div>
+  <div class="kpiCard"><span class="n">96 → 100 %</span><span class="l">cobertura de sentencias y de ramas</span></div>
+  <div class="kpiCard"><span class="n">3</span><span class="l">versiones publicadas (1.0.0, 2.0.0, 2.1.0)</span></div>
+</div>
+
+<div class="callout"><b>Nota sobre el alcance.</b> Trabajé en Python porque el código heredado está en Python. Todas las pruebas automatizadas se ejecutaron de verdad sobre el repositorio, y las capturas de pantalla que aparecen a lo largo del documento son renders de la salida real de los comandos (pytest, coverage, git), no montajes. Al final del informe queda el código fuente completo de la versión entregada.</div>
+
+<!-- ============================== ÍNDICE ============================== -->
+<h1 id="indice" style="border-bottom: none;">Índice<span style="font-size:1px; color:#ffffff;">§MARK_indice§</span></h1>
+<nav class="toc">
+<ol>
+  <li><a href="#misparametros"><span class="t">Mis parámetros (código 0182410133)</span><span class="dots"></span><span class="pg" data-ref="misparametros">3</span></a></li>
+  <li><a href="#sec1"><span class="t">1. Requisitos y criterios de aceptación</span><span class="dots"></span><span class="pg" data-ref="sec1">3</span></a></li>
+  <li><a href="#sec2"><span class="t">2. Plan de pruebas</span><span class="dots"></span><span class="pg" data-ref="sec2">6</span></a></li>
+  <li><a href="#sec3"><span class="t">3. Diseño de casos de caja negra</span><span class="dots"></span><span class="pg" data-ref="sec3">7</span></a></li>
+  <li><a href="#sec4"><span class="t">4. Caja blanca</span><span class="dots"></span><span class="pg" data-ref="sec4">11</span></a></li>
+  <li><a href="#sec5"><span class="t">5. Automatización, ejecución y defectos</span><span class="dots"></span><span class="pg" data-ref="sec5">16</span></a></li>
+  <li><a href="#sec6"><span class="t">6. Mantenimiento y refactorización</span><span class="dots"></span><span class="pg" data-ref="sec6">18</span></a></li>
+  <li><a href="#sec7"><span class="t">7. Gestión de configuración</span><span class="dots"></span><span class="pg" data-ref="sec7">22</span></a></li>
+  <li><a href="#sec8"><span class="t">8. Solicitud de cambio y análisis de impacto</span><span class="dots"></span><span class="pg" data-ref="sec8">25</span></a></li>
+  <li><a href="#conclusiones"><span class="t">Conclusiones</span><span class="dots"></span><span class="pg" data-ref="conclusiones">27</span></a></li>
+  <li><a href="#referencias"><span class="t">Referencias</span><span class="dots"></span><span class="pg" data-ref="referencias">28</span></a></li>
+  <li><a href="#anexoA"><span class="t">Anexo A — Código fuente final (envios.py v2.1.0)</span><span class="dots"></span><span class="pg" data-ref="anexoA">28</span></a></li>
+  <li><a href="#anexoB"><span class="t">Anexo B — CHANGELOG.md completo</span><span class="dots"></span><span class="pg" data-ref="anexoB">31</span></a></li>
+</ol>
+</nav>
+
+<!-- ============================== MIS PARÁMETROS ============================== -->
+<h1 id="misparametros">Mis parámetros (código 0182410133)<span style="font-size:1px; color:#ffffff;">§MARK_misparametros§</span></h1>
+<p>Tomé los 6 últimos dígitos de mi código estudiantil <b>0182410133</b> y los llamé A, B, C, D, E y F. Con ellos calculé mis parámetros personalizados y, como pedía el enunciado, los dejé llenos también en el encabezado del <code>envios.py</code> original. Los valores y las reglas de paridad que dependen de ellos son la base de toda mi especificación y de las pruebas: si estos números están mal, todo lo demás está mal.</p>
+
+<table>
+<caption>Tabla de parámetros propios — código 0182410133</caption>
+<thead><tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>PMAX</th><th>L1</th><th>L2</th><th>RR</th><th>RN</th><th>V</th><th>S</th><th>CAMBIO</th></tr></thead>
+<tbody>
+<tr class="center"><td>4</td><td>1</td><td>0</td><td>1</td><td>3</td><td>3</td><td>50</td><td>3</td><td>10</td><td>25&nbsp;%</td><td>40&nbsp;%</td><td>15&nbsp;%</td><td>$2.000</td><td>1</td></tr>
+</tbody>
+</table>
+
+<table>
+<caption>Cómo se calculó cada parámetro</caption>
+<thead><tr><th>Parámetro</th><th>Fórmula</th><th>Cálculo</th><th>Valor</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>PMAX</td><td>30 + 5·A</td><td>30 + 5·4</td><td class="kpi">50 kg</td><td>Peso máximo permitido por envío</td></tr>
+<tr><td>L1</td><td>2 + (B mod 3)</td><td>2 + (1 mod 3)</td><td class="kpi">3 kg</td><td>Límite del tramo 1</td></tr>
+<tr><td>L2</td><td>10 + C</td><td>10 + 0</td><td class="kpi">10 kg</td><td>Límite del tramo 2 (incluido)</td></tr>
+<tr><td>RR</td><td>10 + 5·(E mod 4)</td><td>10 + 5·(3 mod 4)</td><td class="kpi">25 %</td><td>Recargo por zona rural</td></tr>
+<tr><td>RN</td><td>40 + 5·(F mod 3)</td><td>40 + 5·(3 mod 3)</td><td class="kpi">40 %</td><td>Recargo por zona nacional</td></tr>
+<tr><td>V</td><td>10 + 5·(A mod 3)</td><td>10 + 5·(4 mod 3)</td><td class="kpi">15 %</td><td>Descuento de cliente VIP</td></tr>
+<tr><td>S</td><td>2000 + 500·(C mod 4)</td><td>2000 + 500·(0 mod 4)</td><td class="kpi">$2.000</td><td>Recargo de fin de semana</td></tr>
+<tr><td>CAMBIO</td><td>(A + F) mod 3</td><td>(4 + 3) mod 3</td><td class="kpi">1</td><td>Solicitud de cambio asignada (Parte 8): cliente empresarial</td></tr>
+</tbody>
+</table>
+
+<table>
+<caption>Reglas que cambian según la paridad de mis dígitos</caption>
+<thead><tr><th>Dígito</th><th>Valor</th><th>¿Par o impar?</th><th>Regla que me toca</th></tr></thead>
+<tbody>
+<tr><td>D (tramo 1)</td><td>1</td><td>Impar</td><td>El tramo 1 <b>no incluye</b> el límite: <code>peso &lt; 3 kg</code>. Con peso exactamente 3 kg se cotiza el tramo 2 ($9.000).</td></tr>
+<tr><td>E (recargo fin de semana)</td><td>3</td><td>Impar</td><td>El recargo de fin de semana (+$2.000) se suma <b>después</b> de aplicar los descuentos.</td></tr>
+<tr><td>B (cliente y cupón)</td><td>1</td><td>Impar</td><td>Se aplican ambos: primero el descuento del cliente y luego el del cupón.</td></tr>
+<tr><td>F (cupón que no existe)</td><td>3</td><td>Impar</td><td>Un cupón que no existe es un <b>error</b>: se lanza <code>ValueError</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="callout"><b>Por qué esto importa tanto.</b> El enunciado es claro: si la especificación, los resultados esperados o el <code>CONFIG</code> no corresponden a mi código estudiantil, la nota es 0. Por eso antes de tocar el código heredado dejé escrito <code>CONFIG</code> con mis valores (L1=3, L2=10, RR=0,25, RN=0,40, V=0,15, RECARGO_FINDE=2000) y verifiqué el ejemplo del enunciado con mis propios números. Todo lo que sigue asume este cuadro como fuente de verdad.</div>
+
+<!-- ============================== 1. REQUISITOS ============================== -->
+<h1 id="sec1">1. Requisitos y criterios de aceptación <span class="small">· Parte 1 (0,4 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec1§</span></h1>
+
+<h2>1.1 Especificación propia (R1–R8)</h2>
+<p>Esta es mi especificación completa, con mis números ya puestos. La redactó a partir del enunciado y de los parámetros de mi código; cada regla indica con su ID la fuente. Los valores límite llevan la aclaración de mi paridad (D impar excluye L1 del tramo 1, E impar pone el fin de semana después de los descuentos, B impar combina los dos descuentos y F impar convierte un cupón inexistente en error).</p>
+
+<table>
+<caption>Tabla 1.1 — Especificación propia del cálculo del costo</caption>
+<thead><tr><th>ID</th><th>Regla (con mis valores)</th></tr></thead>
+<tbody>
+<tr><td class="center">R1</td><td>El peso debe cumplir <b>0 &lt; peso ≤ 50 kg</b> (PMAX = 30 + 5·4 = 50). Admite decimales. Si no se cumple, se lanza <code>ValueError("peso invalido")</code>.</td></tr>
+<tr><td class="center">R2</td><td>La zona debe ser <b>urbana</b>, <b>rural</b> o <b>nacional</b>; el día debe ser un entero entre 1 y 7 (6 = sábado, 7 = domingo). Si zona o día no son válidos, se lanza <code>ValueError</code>.</td></tr>
+<tr><td class="center">R3</td><td><b>Tramo 1</b> (D impar: <code>peso &lt; 3 kg</code>): $6.000. <b>Tramo 2</b> (<code>3 ≤ peso ≤ 10</code>): $9.000. <b>Sobre L2</b> (peso &gt; 10 kg): $9.000 + $800 por cada kg sobre 10, de forma proporcional (admite decimales).</td></tr>
+<tr><td class="center">R4</td><td><b>Recargo por zona</b>: rural <b>+25 %</b> (RR = 25 %), nacional <b>+40 %</b> (RN = 40 %), urbana: sin recargo. Se aplica sobre el subtotal de la tarifa.</td></tr>
+<tr><td class="center">R5</td><td><b>Fin de semana</b> (día 6 = sábado y día 7 = domingo): <b>+$2.000</b> (S = $2.000). E impar: el recargo se suma <b>después</b> de aplicar los descuentos.</td></tr>
+<tr><td class="center">R6</td><td><b>Descuento de cliente</b>: frecuente <b>5 %</b>; VIP <b>15 %</b> (V = 15 %). <b>Cupón ENVIO10</b>: <b>10 %</b>. B impar: si hay ambos, se combinan aplicando primero el del cliente y después el del cupón.</td></tr>
+<tr><td class="center">R7</td><td><b>Cupón que no existe</b> (cualquier valor distinto de ENVIO10) → <b>error</b> (F impar): se lanza <code>ValueError</code>. Sin cupón (None) no pasa nada.</td></tr>
+<tr><td class="center">R8</td><td><b>Costo mínimo</b>: el resultado nunca es menor que <b>$5.000</b>. <b>Redondeo</b>: al múltiplo de $100 más cercano; los $50 redondean <b>hacia arriba</b> (redondeo medio hacia arriba).</td></tr>
+</tbody>
+</table>
+
+<div class="warn"><b>Supuestos que documenté (y asumo como equipo).</b> (1) Un <code>cliente</code> desconocido (por ejemplo, escrito mal) se trata como normal: sin descuento. La especificación no define qué hacer y el enunciado solo exige error para zona y día; no inventé reglas extras. (2) <code>dia</code> acepta decimales solamente si son enteros exactos (p. ej. 2.0), igual que acepta enteros; 2.5 es inválido porque el día es un entero de 1 a 7. (3) El recargo de zona se calcula multiplicativamente sobre la tarifa del tramo (no aditivamente en pesos), igual que en el código heredado. (4) Un peso de exactamente 3 kg pertenece al tramo 2 porque D es impar.</div>
+
+<h2>1.2 Historias de usuario</h2>
+<p>Tres historias cubren R1–R8 entre las tres. Cada criterio de aceptación está en formato <b>Dado / Cuando / Entonces</b> y apunta a la regla que verifica.</p>
+
+<h3>HU-1 — Conocer el costo antes de aceptar el envío</h3>
+<p><b>Como</b> operadora del punto de envíos de Riohacha, <b>quiero</b> calcular el costo de un paquete a partir de su peso, zona, día y cupón, <b>para</b> informárselo al cliente antes de aceptarlo.</p>
+<table>
+<caption>HU-1 · Criterios de aceptación (R1, R3, R4, R8)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>un paquete de 2 kg para zona urbana en un martes</td><td>calculo el costo</td><td>el resultado es $6.000</td><td>R3, tramo 1 (peso &lt; 3)</td></tr>
+<tr><td class="center">CA2</td><td>un paquete de 3 kg para zona urbana</td><td>calculo el costo</td><td>el resultado es $9.000 (tramo 2, porque D impar excluye el límite 3 del tramo 1)</td><td>R3</td></tr>
+<tr><td class="center">CA3</td><td>un paquete de 12 kg para zona urbana</td><td>calculo el costo</td><td>el resultado es $10.600 = 9.000 + 2 × 800</td><td>R3</td></tr>
+<tr><td class="center">CA4</td><td>un paquete de 4 kg para zona rural</td><td>calculo el costo</td><td>el resultado es $11.300 (9.000 × 1,25 = 11.250 redondeado hacia arriba a $100)</td><td>R4, R8</td></tr>
+<tr><td class="center">CA5</td><td>un peso de 0 kg, o de 51 kg</td><td>calculo el costo</td><td>el sistema lanza <code>ValueError</code> con el mensaje «peso invalido»</td><td>R1</td></tr>
+</tbody>
+</table>
+
+<h3>HU-2 — Que aplicaran bien mis descuentos y recargos</h3>
+<p><b>Como</b> cliente frecuente de EnvíaYa, <b>quiero</b> que mis descuentos, los recargos de fin de semana y el cupón ENVIO10 se apliquen con las reglas del sistema, <b>para</b> pagar lo que de verdad me toca.</p>
+<table>
+<caption>HU-2 · Criterios de aceptación (R5, R6, R8)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>cliente VIP, 4 kg, zona urbana, sin cupón</td><td>calculo el costo</td><td>$7.700 (9.000 × 0,85 = 7.650 redondeado a $100 → 7.700)</td><td>R6, R8</td></tr>
+<tr><td class="center">CA2</td><td>cliente VIP, 4 kg, cupón ENVIO10 (B impar: ambos descuentos)</td><td>calculo el costo</td><td>$6.900 (9.000 × 0,85 = 7.650; × 0,90 = 6.885 → 6.900)</td><td>R6</td></tr>
+<tr><td class="center">CA3</td><td>un sábado (día 6), cliente normal, 4 kg</td><td>calculo el costo</td><td>$11.000 (9.000 + 2.000)</td><td>R5</td></tr>
+<tr><td class="center">CA4</td><td>un sábado, cliente VIP (E impar: el finde se suma después de los descuentos)</td><td>calculo el costo</td><td>$9.700 (9.000 × 0,85 = 7.650; + 2.000 = 9.650 → 9.700)</td><td>R5, R8</td></tr>
+<tr><td class="center">CA5</td><td>un costo final de $4.590 (VIP + ENVIO10, 2 kg)</td><td>calculo el costo</td><td>el resultado nunca baja de $5.000 → $5.000</td><td>R8</td></tr>
+</tbody>
+</table>
+
+<h3>HU-3 — Que el sistema rechace las entradas inválidas</h3>
+<p><b>Como</b> supervisora de la calidad del sistema, <b>quiero</b> que el cálculo rechace datos imposibles (pesos fuera de rango, zonas o días inválidos, cupones que no existen), <b>para</b> no cobrar a ciegas ni guardar basura en los envíos.</p>
+<table>
+<caption>HU-3 · Criterios de aceptación (R1, R2, R7)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>un día con valor 0, u 8, o 2.5</td><td>calculo el costo</td><td>se lanza <code>ValueError("dia invalido")</code></td><td>R2</td></tr>
+<tr><td class="center">CA2</td><td>una zona «insular»</td><td>calculo el costo</td><td>se lanza <code>ValueError("zona invalida")</code> (solo urbana, rural y nacional son válidas)</td><td>R2</td></tr>
+<tr><td class="center">CA3</td><td>el cupón «VERANO20»</td><td>calculo el costo</td><td>se lanza <code>ValueError("cupon no existe")</code> (F impar)</td><td>R7</td></tr>
+<tr><td class="center">CA4</td><td>un peso de 51 kg</td><td>calculo el costo</td><td>se lanza <code>ValueError("peso invalido")</code></td><td>R1</td></tr>
+<tr><td class="center">CA5</td><td>un peso de 2 kg y cliente normal</td><td>calculo el costo</td><td>no lanza ningún error: el cupón es opcional y omitirlo es válido</td><td>R7</td></tr>
+</tbody>
+</table>
+
+<h2>1.3 Matriz de trazabilidad</h2>
+<p>Requisito → historia → casos de prueba. La columna «Casos» apunta a la matriz de la Parte 3 (IDs CA-01 a CA-32); la fuente de verdad de cada caso es la especificación de la tabla 1.1.</p>
+<table>
+<caption>Tabla 1.2 — Trazabilidad requisito ↔ historia ↔ casos de prueba</caption>
+<thead><tr><th>Requisito</th><th>Historias</th><th>Casos de prueba</th></tr></thead>
+<tbody>
+<tr><td>R1 · Peso válido</td><td>HU-1, HU-3</td><td>CA-24, CA-25, CA-26</td></tr>
+<tr><td>R2 · Zona y día válidos</td><td>HU-3</td><td>CA-27, CA-28, CA-29</td></tr>
+<tr><td>R3 · Tarifas por tramo</td><td>HU-1</td><td>CA-01 … CA-08</td></tr>
+<tr><td>R4 · Recargo por zona</td><td>HU-1, HU-2</td><td>CA-09, CA-10, CA-11, CA-21, CA-31</td></tr>
+<tr><td>R5 · Fin de semana</td><td>HU-2</td><td>CA-12, CA-13, CA-19, CA-20, CA-21, CA-22, CA-32</td></tr>
+<tr><td>R6 · Descuentos (B impar)</td><td>HU-2</td><td>CA-14, CA-15, CA-16, CA-17, CA-18, CA-20, CA-21, CA-31</td></tr>
+<tr><td>R7 · Cupón no existe → error (F impar)</td><td>HU-3</td><td>CA-30</td></tr>
+<tr><td>R8 · Costo mínimo y redondeo</td><td>HU-2</td><td>CA-09, CA-11, CA-14, CA-15, CA-23</td></tr>
+</tbody>
+</table>
+
+<!-- ============================== 2. PLAN DE PRUEBAS ============================== -->
+<h1 id="sec2">2. Plan de pruebas <span class="small">· Parte 2 (0,5 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec2§</span></h1>
+<p>Este es el plan que seguí para probar el calculador. No es un documento decorativo: los niveles, la estrategia y los criterios se aplicaron de verdad durante el trabajo, y la evidencia está en la Parte 5 y en las capturas de pantalla.</p>
+
+<h2>2.1 Alcance</h2>
+<p><b>Dentro:</b> la función de cálculo del costo (validación de entradas, tramos, recargos por zona, descuentos, recargo de fin de semana, mínimo y redondeo), su comportamiento observable desde Python, la batería de pruebas automatizadas, la ejecución contra el código heredado y contra las versiones corregidas, y la evidencia de cobertura. <b>Fuera:</b> la interfaz de usuario (el sistema es un módulo sin GUI ni API HTTP), una base de datos, despliegues en producción y pruebas de carga o concurrencia.</p>
+
+<h2>2.2 Niveles de prueba aplicados al caso</h2>
+<table>
+<caption>Tabla 2.1 — Los cuatro niveles de prueba, aplicados a EnvíaYa</caption>
+<thead><tr><th>Nivel</th><th>Cómo se aplica a este caso</th><th>Artefacto</th></tr></thead>
+<tbody>
+<tr><td><b>Unidad</b></td><td>Cada función extraída en la refactorización se ejercita por separado: <code>validar_peso</code>, <code>validar_zona</code>, <code>validar_dia</code>, <code>tarifa_por_peso</code>, <code>aplicar_recargo_zona</code> (una estrategia por zona), <code>aplicar_descuentos</code>, <code>aplicar_fin_de_semana</code>, <code>redondear_100</code>. Se mide con los casos de la Parte 3.</td><td><code>tests/test_envios.py</code></td></tr>
+<tr><td><b>Integración</b></td><td>El flujo completo <code>calcular_costo</code> integra todos los componentes: validación → tarifa → zona → descuentos → fin de semana → mínimo → redondeo. Las interacciones (p. ej., descuento antes que fin de semana, cupón después del cliente) se prueban de extremo a extremo dentro del módulo.</td><td>Casos CA-19 a CA-22, CA-31, CA-32</td></tr>
+<tr><td><b>Sistema</b></td><td>El módulo se usa como sistema completo desde un cliente Python: <code>import envios; envios.calc(...)</code>. Se verificó el comportamiento del sistema heredado tal como lo encontré, y luego el de v2.0.0 y v2.1.0.</td><td>Ejecuciones en este documento</td></tr>
+<tr><td><b>Aceptación</b></td><td>Los criterios de aceptación de las historias HU-1 a HU-3 se traducen uno a uno en casos ejecutables; si todos están en verde, el sistema satisface las historias que le venden al negocio.</td><td>Tabla 1.1 ↔ matriz Parte 3</td></tr>
+</tbody>
+</table>
+
+<h2>2.3 Estrategia, ambiente y roles</h2>
+<p><b>Estrategia.</b> Combinación de dos enfoques: <b>caja negra</b> sobre la especificación (particiones, valores límite, tabla de decisión; técnica independiente de la implementación) y <b>caja blanca</b> sobre el código (grafo de flujo, complejidad ciclomática, caminos independientes y cobertura de sentencias y ramas con <code>pytest-cov --cov-branch</code>). Los casos de caja negra fallaron contra heredado 18 veces; los caminos de caja blanca guían qué falta cubrir. Para la solicitud de cambio (Parte 8) apliqué TDD: la prueba primero, la vi fallar, y luego implementé hasta el verde. Siempre regresión completa antes de etiquetar una versión.</p>
+<p><b>Ambiente.</b> Windows 11, Python 3.14.7, pytest 9.2.0, pytest-cov 7.1.0, Git 2.55.0.windows.5. Sin base de datos ni servicios externos; todo corre en local sobre el repositorio. <b>Roles.</b> Yo (Alex Valdelamar Bustamante) actué como equipo de calidad y mantenimiento: analista (especificación y casos), automatizador (suite pytest), corrector (6 defectos), refactorizador (patrón Estrategia), gestor de configuración (ramas, merges y tags) y dueño del informe. El docente actúa como dueño del producto y aprueba en la sustentación.</p>
+
+<h2>2.4 Riesgos y mitigación</h2>
+<table>
+<caption>Tabla 2.2 — Riesgos del esfuerzo de pruebas y su mitigación</caption>
+<thead><tr><th>#</th><th>Riesgo</th><th>Probabilidad / Impacto</th><th>Mitigación</th></tr></thead>
+<tbody>
+<tr><td>R-01</td><td><b>Ambigüedad en el redondeo</b> («$50 redondean hacia arriba» no era explícito en el heredado: truncaba).</td><td>Alta / Media</td><td>Regla explícita en R8 y casos dedicados al filo de los $50 (CA-09: 11.250 → 11.300; CA-11: 13.250 → 13.300).</td></tr>
+<tr><td>R-02</td><td><b>Orden de aplicación fin de semana vs. descuentos</b> (E impar invierte el orden lógico del heredado).</td><td>Alta / Alta</td><td>R5 documenta E impar; CA-19 a CA-22 y CA-32 fijan el orden; el defecto quedó registrado como DEF-03.</td></tr>
+<tr><td>R-03</td><td><b>Frontera del tramo 1</b> (D impar: el límite 3 no pertenece al tramo 1).</td><td>Alta / Media</td><td>Valores límite dedicados (CA-03: 2.99 → 6.000; CA-04: 3 → 9.000); DEF-01.</td></tr>
+<tr><td>R-04</td><td><b>Cupón inexistente</b> silenciosamente ignorado (F impar exige error).</td><td>Media / Media</td><td>Prueba CA-30 con <code>pytest.raises(ValueError)</code>; DEF-04.</td></tr>
+<tr><td>R-05</td><td><b>Regresión por la refactorización</b> (quitar <code>flag</code>, extraer funciones, Estrategia).</td><td>Media / Alta</td><td>La misma suite (32 casos) valida el módulo antes y después; después del refactor se agregaron las 8 pruebas del empresarial y la cobertura quedó en 100 %.</td></tr>
+<tr><td>R-06</td><td><b>Falsos positivos por entorno</b> (versión de Python/pytest distinta en la máquina del docente).</td><td>Baja / Media</td><td>Versiones exactas documentadas aquí; los comandos usados son los mismos en cualquier entorno con pytest instalado.</td></tr>
+</tbody>
+</table>
+
+<h2>2.5 Criterios de entrada y de salida</h2>
+<p><b>Entrada.</b> (1) Código heredado importado y etiquetado v1.0.0; (2) <code>CONFIG</code> con mis valores; (3) especificación R1–R8 escrita y revisada contra los parámetros; (4) suite de 32 casos escrita y trazable; (5) ambiente con pytest y pytest-cov funcionando. <b>Salida.</b> (1) 100 % de las pruebas en verde (logrado: 40/40); (2) cobertura de sentencias y ramas ≥ 95 % (logrado: 100 %); (3) cero defectos de severidad mayor abiertos (los 6 defectos quedaron cerrados, ver DEF-01 a DEF-06); (4) documentación de configuración (tags, ramas, CHANGELOG) y evidencia de regresión en el repositorio; (5) informe con las evidencias (capturas) adjunto.</p>
+
+<!-- ============================== 3. CAJA NEGRA ============================== -->
+<h1 id="sec3">3. Diseño de casos de caja negra <span class="small">· Parte 3 (0,9 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec3§</span></h1>
+<p>Todos los casos de esta sección se diseñaron desde la especificación (caja negra), sin mirar el código heredado ni su lógica. Los resultados esperados se calcularon a mano siguiendo R1–R8. Si alguna vez el «esperado» no cuadraba con lo que hacía el sistema, el error era del sistema y no de mi cálculo; quedó registrado como defecto en la Parte 5.</p>
+
+<h2>3.1 Particiones de equivalencia</h2>
+<table>
+<caption>Tabla 3.1 — Partición de cada entrada (válidas e inválidas)</caption>
+<thead><tr><th>Entrada</th><th>Partición válida</th><th>Partición inválida</th><th>Representante(s)</th></tr></thead>
+<tbody>
+<tr><td>peso (kg, decimal)</td><td><b>P1</b>: 0 &lt; peso ≤ 50</td><td><b>P4</b>: peso ≤ 0 · <b>P5</b>: peso &gt; 50</td><td>2 · 25 · 50 / 0 · −1 · 51</td></tr>
+<tr><td>peso — subpartición por tramo</td><td><b>P1a</b>: 0 &lt; peso &lt; 3 (tramo 1) · <b>P1b</b>: 3 ≤ peso ≤ 10 (tramo 2) · <b>P1c</b>: peso &gt; 10 (sobre L2)</td><td>—</td><td>2 / 5 / 12</td></tr>
+<tr><td>zona</td><td><b>P2</b>: urbana · <b>P3</b>: rural · <b>P4</b>: nacional</td><td><b>P5</b>: cualquier otra (p. ej. insular)</td><td>urbana · rural · nacional / insular</td></tr>
+<tr><td>cliente</td><td><b>P6</b>: normal · <b>P7</b>: frecuente · <b>P8</b>: vip</td><td><b>P9</b>: desconocido → se trata como normal (supuesto documentado)</td><td>normal · frecuente · vip</td></tr>
+<tr><td>dia (entero 1–7)</td><td><b>P10</b>: 1 (lunes) … <b>P16</b>: 7 (domingo)</td><td><b>P17</b>: 0 · <b>P18</b>: 8 o más · <b>P19</b>: no entero (2.5) o no numérico</td><td>1 · 6 · 7 / 0 · 8 · 2.5</td></tr>
+<tr><td>cupón (opcional)</td><td><b>P20</b>: ausente (None) · <b>P21</b>: ENVIO10</td><td><b>P22</b>: cualquier otro valor (VERANO20…) → error (F impar)</td><td>None · ENVIO10 / VERANO20</td></tr>
+</tbody>
+</table>
+
+<h2>3.2 Valores límite de peso</h2>
+<p>Peso es la entrada con más bordes: 0, L1 = 3 (mi D impar <u>excluye</u> el límite), L2 = 10 (incluido) y PMAX = 50.</p>
+<table>
+<caption>Tabla 3.2 — Valores límite alrededor de 0, L1, L2 y PMAX</caption>
+<thead><tr><th>Punto de frontera</th><th>Entradas</th><th>Esperado</th><th>Técnica</th></tr></thead>
+<tbody>
+<tr><td>0 (límite inferior R1)</td><td>peso = 0</td><td>ValueError("peso invalido")</td><td>VL</td></tr>
+<tr><td>0 (mínimo válido)</td><td>peso = 0.01</td><td>$6.000</td><td>VL</td></tr>
+<tr><td>L1 − ε = 2.99 (borde del tramo 1)</td><td>peso = 2.99, urbana, normal, d=2</td><td>$6.000</td><td>VL</td></tr>
+<tr><td><b>L1 = 3 (D impar: fuera del tramo 1)</b></td><td>peso = 3, urbana, normal, d=2</td><td><b>$9.000</b> (tramo 2)</td><td><b>VL</b></td></tr>
+<tr><td>L2 = 10 (incluido, tramo 2)</td><td>peso = 10, urbana, normal, d=2</td><td>$9.000</td><td>VL</td></tr>
+<tr><td>L2 + ε = 10.5 (sobre L2)</td><td>peso = 10.5, urbana, normal, d=2</td><td>$9.400</td><td>VL</td></tr>
+<tr><td>PMAX = 50 (incluido)</td><td>peso = 50, urbana, normal, d=2</td><td>$41.000</td><td>VL</td></tr>
+<tr><td>PMAX + ε = 50.01 (fuera de rango)</td><td>peso = 50.01</td><td>ValueError("peso invalido")</td><td>VL</td></tr>
+</tbody>
+</table>
+<p class="small">Nota: en mi especificación el D impar hace que el borde 3 kg no pertenezca al tramo 1; para un compañero con D par, el mismo peso 3 kg estaría en el tramo 1 y daría $6.000. Por eso la frontera es la parte más peligrosa de copiar entre compañeros.</p>
+
+<h2>3.3 Tabla de decisión — cliente × cupón × fin de semana</h2>
+<p>Fijé contexto estable (peso = 4 kg → tramo 2 → $9.000; zona urbana; sin recargo) y moví las tres dimensiones del enunciado: <b>cliente</b> (normal / frecuente / vip), <b>cupón</b> (ninguno / ENVIO10 / inexistente) y <b>fin de semana</b> (d=2 vs sábado d=6). Ojo con el par B/E impar: los dos descuentos se acumulan (frecuente 5 % o vip 15 % <i>y luego</i> cupón 10 %) y el recargo de fin de semana se suma después de todo. Escenario weekday = día 2; fin de semana = día 6 (sábado).</p>
+<table>
+<caption>Tabla 3.3 — Tabla de decisión (peso = 4 kg, zona urbana)</caption>
+<thead><tr><th>Cliente</th><th>Cupón</th><th>Día 2 (entre semana)</th><th>Día 6 (sábado)</th></tr></thead>
+<tbody>
+<tr><td>normal</td><td>ninguno</td><td>9.000</td><td>11.000</td></tr>
+<tr><td>normal</td><td>ENVIO10</td><td>8.100</td><td>10.100</td></tr>
+<tr><td>normal</td><td>inexistente (VERANO20)</td><td><span class="tag tag-err">ValueError</span></td><td><span class="tag tag-err">ValueError</span></td></tr>
+<tr><td>frecuente (−5 %)</td><td>ninguno</td><td>8.600</td><td>10.600</td></tr>
+<tr><td>frecuente (−5 %)</td><td>ENVIO10 (ambos)</td><td>7.700</td><td>9.700</td></tr>
+<tr><td>frecuente (−5 %)</td><td>inexistente (VERANO20)</td><td><span class="tag tag-err">ValueError</span></td><td><span class="tag tag-err">ValueError</span></td></tr>
+<tr><td>vip (−15 %)</td><td>ninguno</td><td>7.700</td><td>9.700</td></tr>
+<tr><td>vip (−15 %)</td><td>ENVIO10 (ambos)</td><td>6.900</td><td>8.900</td></tr>
+<tr><td>vip (−15 %)</td><td>inexistente (VERANO20)</td><td><span class="tag tag-err">ValueError</span></td><td><span class="tag tag-err">ValueError</span></td></tr>
+</tbody>
+</table>
+<p class="small">Ejemplo de celda «vip · ENVIO10 · sábado»: 9.000 × 0,85 = 7.650; × 0,90 = 6.885; sábado (E impar, después de descuentos): + 2.000 = 8.885 → redondeo al $100 → <b>8.900</b>. Los pares «frecuente + sábado» y «frecuente + domingo» ejercitan los defectos del heredado: en sábado no cobraba el finde (daba 8.500) y en domingo lo cobraba antes del descuento y truncando (10.400). La regla correcta da 8.550 + 2.000 = 10.550 → 10.600 en ambos días.</p>
+
+<h2>3.4 Matriz de casos de prueba (mínimo 20; tengo 32)</h2>
+<p>Columnas: ID, requisito, entradas, resultado esperado <b>calculado a mano</b> y técnica que lo generó (PE = particiones de equivalencia, VL = valores límite, TD = tabla de decisión). "err" significa que se espera que la función lance <code>ValueError</code>.</p>
+<table class="matrix">
+<caption>Tabla 3.4 — Matriz de casos de prueba (32 casos)</caption>
+<thead><tr><th>ID</th><th>Req.</th><th>Peso</th><th>Zona</th><th>Cliente</th><th>Día</th><th>Cupón</th><th>Esperado ($)</th><th>Técnica</th></tr></thead>
+<tbody>
+<tr><td>CA-01</td><td>R3</td><td>2</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>6.000</td><td>PE</td></tr>
+<tr><td>CA-02</td><td>R3</td><td>2.5</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>6.000</td><td>PE</td></tr>
+<tr><td>CA-03</td><td>R3</td><td>2.99</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>6.000</td><td>VL</td></tr>
+<tr><td>CA-04</td><td>R3</td><td>3</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td><b>9.000</b></td><td>VL</td></tr>
+<tr><td>CA-05</td><td>R3</td><td>10</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>9.000</td><td>VL</td></tr>
+<tr><td>CA-06</td><td>R3</td><td>10.5</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>9.400</td><td>VL</td></tr>
+<tr><td>CA-07</td><td>R3</td><td>12</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>10.600</td><td>PE</td></tr>
+<tr><td>CA-08</td><td>R3</td><td>50</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>41.000</td><td>VL</td></tr>
+<tr><td>CA-09</td><td>R4</td><td>4</td><td>rural</td><td>normal</td><td>2</td><td>—</td><td><b>11.300</b></td><td>PE (redondeo ↑)</td></tr>
+<tr><td>CA-10</td><td>R4</td><td>4</td><td>nacional</td><td>normal</td><td>2</td><td>—</td><td>12.600</td><td>PE</td></tr>
+<tr><td>CA-11</td><td>R4</td><td>12</td><td>rural</td><td>normal</td><td>2</td><td>—</td><td><b>13.300</b></td><td>PE (redondeo ↑)</td></tr>
+<tr><td>CA-12</td><td>R5</td><td>4</td><td>urbana</td><td>normal</td><td>6</td><td>—</td><td><b>11.000</b></td><td>TD (sábado)</td></tr>
+<tr><td>CA-13</td><td>R5</td><td>4</td><td>urbana</td><td>normal</td><td>7</td><td>—</td><td>11.000</td><td>TD (domingo)</td></tr>
+<tr><td>CA-14</td><td>R6</td><td>4</td><td>urbana</td><td>frecuente</td><td>2</td><td>—</td><td><b>8.600</b></td><td>TD</td></tr>
+<tr><td>CA-15</td><td>R6</td><td>4</td><td>urbana</td><td>vip</td><td>2</td><td>—</td><td>7.700</td><td>TD</td></tr>
+<tr><td>CA-16</td><td>R6</td><td>4</td><td>urbana</td><td>normal</td><td>2</td><td>ENVIO10</td><td>8.100</td><td>TD</td></tr>
+<tr><td>CA-17</td><td>R6</td><td>4</td><td>urbana</td><td>vip</td><td>2</td><td>ENVIO10</td><td><b>6.900</b></td><td>TD</td></tr>
+<tr><td>CA-18</td><td>R6</td><td>4</td><td>urbana</td><td>frecuente</td><td>2</td><td>ENVIO10</td><td>7.700</td><td>TD</td></tr>
+<tr><td>CA-19</td><td>R5</td><td>4</td><td>urbana</td><td>vip</td><td>6</td><td>—</td><td><b>9.700</b></td><td>TD</td></tr>
+<tr><td>CA-20</td><td>R5</td><td>4</td><td>urbana</td><td>vip</td><td>6</td><td>ENVIO10</td><td><b>8.900</b></td><td>TD</td></tr>
+<tr><td>CA-21</td><td>R4</td><td>4</td><td>rural</td><td>vip</td><td>6</td><td>ENVIO10</td><td>10.600</td><td>TD (completo)</td></tr>
+<tr><td>CA-22</td><td>R5</td><td>4</td><td>urbana</td><td>frecuente</td><td>6</td><td>—</td><td><b>10.600</b></td><td>TD</td></tr>
+<tr><td>CA-23</td><td>R8</td><td>2</td><td>urbana</td><td>vip</td><td>2</td><td>ENVIO10</td><td><b>5.000</b></td><td>PE (mínimo)</td></tr>
+<tr><td>CA-24</td><td>R1</td><td>0</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>err</td><td>PE</td></tr>
+<tr><td>CA-25</td><td>R1</td><td>−1</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>err</td><td>PE</td></tr>
+<tr><td>CA-26</td><td>R1</td><td>51</td><td>urbana</td><td>normal</td><td>2</td><td>—</td><td>err</td><td>PE</td></tr>
+<tr><td>CA-27</td><td>R2</td><td>4</td><td>insular</td><td>normal</td><td>2</td><td>—</td><td>err</td><td>PE</td></tr>
+<tr><td>CA-28</td><td>R2</td><td>4</td><td>urbana</td><td>normal</td><td>0</td><td>—</td><td>err</td><td>VL</td></tr>
+<tr><td>CA-29</td><td>R2</td><td>4</td><td>urbana</td><td>normal</td><td>8</td><td>—</td><td>err</td><td>VL</td></tr>
+<tr><td>CA-30</td><td>R7</td><td>4</td><td>urbana</td><td>normal</td><td>2</td><td>VERANO20</td><td>err</td><td>PE</td></tr>
+<tr><td>CA-31</td><td>R4</td><td>12</td><td>nacional</td><td>vip</td><td>7</td><td>ENVIO10</td><td><b>13.400</b></td><td>TD (completo)</td></tr>
+<tr><td>CA-32</td><td>R5</td><td>4</td><td>urbana</td><td>frecuente</td><td>7</td><td>—</td><td><b>10.600</b></td><td>TD</td></tr>
+</tbody>
+</table>
+<p class="small">Los casos en negrita son los que ejercicionan los seis defectos (DEF-01 a DEF-06). Un caso «error» significa ValueError: CA-24 a CA-30 lanzan excepción por la entrada inválida indicada.</p>
+
+<h2>3.4.1 Cálculo paso a paso de seis casos</h2>
+<p>Como en el ejemplo del enunciado, aquí está la cuenta completa de los casos más representativos. Todos los totales llevan redondeo final al múltiplo de $100 más cercano con el $50 hacia arriba (R8).</p>
+
+<h3>CA-04 — El borde exacto del tramo 1 (D impar)</h3>
+<ol>
+<li>Peso 3 kg. ¿<code>3 &lt; 3</code>? No (D impar: el tramo 1 no incluye el límite). ¿<code>3 ≤ 10</code>? Sí → tramo 2 → <b>$9.000</b>.</li>
+<li>Zona urbana → sin recargo.</li>
+<li>Día 2 → no es fin de semana.</li>
+<li>Cliente normal → sin descuento. Sin cupón.</li>
+<li>$9.000 ≥ $5.000 → mínimo no aplica. Redondeo: 9.000 exacto → <b>$9.000</b>.</li>
+</ol>
+
+<h3>CA-09 — Zona rural con redondeo hacia arriba</h3>
+<ol>
+<li>Peso 4 kg → tramo 2 → <b>$9.000</b>. Zona rural: 9.000 × 1,25 = <b>11.250</b>.</li>
+<li>Día 2, cliente normal, sin cupón.</li>
+<li>$11.250 ≥ $5.000. Redondeo al $100 más cercano: 112,5 redondea hacia arriba → 113 × 100 = <b>$11.300</b>. <span class="small">(Aquí el heredado devolvía int(11250/100)×100 = 11.200: redondeaba <i>hacia abajo</i> un envío rural.)</span></li>
+</ol>
+
+<h3>CA-15 — Cliente VIP</h3>
+<ol>
+<li>Peso 4 → tramo 2 → 9.000. Urbana. Día 2.</li>
+<li>VIP 15 %: 9.000 × 0,85 = <b>7.650</b>.</li>
+<li>Redondeo: 76,5 → hacia arriba → <b>$7.700</b>.</li>
+</ol>
+
+<h3>CA-19 — VIP en sábado (E impar: el finde se suma después)</h3>
+<ol>
+<li>Peso 4 → 9.000. Urbana. Día 6 (sábado).</li>
+<li>Descuentos primero (E impar): VIP → 9.000 × 0,85 = <b>7.650</b>. Sin cupón.</li>
+<li>Fin de semana: + 2.000 = <b>9.650</b>.</li>
+<li>Redondeo: 96,5 → hacia arriba → <b>$9.700</b>. <span class="small">(El heredado, que solo cobraba el finde en domingo y además truncaba, devolvía 7.600 para este mismo pedido.)</span></li>
+</ol>
+
+<h3>CA-21 — El caso completo: rural + VIP + ENVIO10 + sábado</h3>
+<ol>
+<li>Peso 4 → tramo 2 → 9.000. Zona rural: 9.000 × 1,25 = <b>11.250</b>.</li>
+<li>Descuentos (B impar, cliente primero y luego cupón): VIP → 11.250 × 0,85 = <b>9.562,5</b>; cupón ENVIO10 → 9.562,5 × 0,90 = <b>8.606,25</b>.</li>
+<li>Fin de semana (E impar, después): + 2.000 = <b>10.606,25</b>.</li>
+<li>$10.606,25 ≥ $5.000. Redondeo: 106,06… → 106 × 100 = <b>$10.600</b>. <span class="small">(El heredado: fin de semana solo en domingo (d=6 no cobraba) + truncado → 8.600. Doble error sobre el mismo envío.)</span></li>
+</ol>
+
+<h3>CA-31 — Sobre L2, nacional, VIP, domingo, ENVIO10</h3>
+<ol>
+<li>Peso 12 → sobre L2: 9.000 + 2 × 800 = <b>10.600</b>. Zona nacional +40 %: 10.600 × 1,40 = <b>14.840</b>.</li>
+<li>VIP: 14.840 × 0,85 = <b>12.614</b>; cupón ENVIO10: 12.614 × 0,90 = <b>11.352,6</b>.</li>
+<li>Domingo (día 7), E impar: + 2.000 = <b>13.352,6</b>.</li>
+<li>Redondeo: 133,53 → 134 × 100 = <b>$13.400</b>.</li>
+</ol>
+
+<!-- ============================== 4. CAJA BLANCA ============================== -->
+<h1 id="sec4">4. Caja blanca <span class="small">· Parte 4 (0,6 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec4§</span></h1>
+<p>Aquí analicé el código por dentro: grafo de flujo, complejidad ciclomática, caminos independientes y cobertura. Trabajé sobre la versión heredada (v1.0.0), que es la que corresponde a esta parte del enunciado; las líneas citadas son las de <code>envios.py</code> original.</p>
+
+<h2>4.1 Grafo de flujo de <code>calc</code></h2>
+<p>El grafo tiene <b>30 nodos</b> y <b>43 aristas</b>. Los nodos predicado (d1–d14) son rombos amarillos; las acciones, rectángulos azules; inicio/fin, verdes; la excepción, roja. Para que quepa legible lo dividí en tres figuras. La leyenda va debajo.</p>
+
+<div class="figure"><img src="assets/grafo_a.png" alt="Grafo de flujo parte A" style="width: 58%;"><div class="caption">Figura 4.1a — Nodos 1–10: inicio, validación de peso y tramos.</div></div>
+<div class="figure"><img src="assets/grafo_b.png" alt="Grafo de flujo parte B" style="width: 62%;"><div class="caption">Figura 4.1b — Nodos 10–18: zonas y recargo de fin de semana.</div></div>
+<div class="figure"><img src="assets/grafo_c.png" alt="Grafo de flujo parte C" style="width: 72%;"><div class="caption">Figura 4.1c — Nodos 20–30: descuentos, mínimo, flag y retorno.</div></div>
+
+<table>
+<caption>Tabla 4.1 — Leyenda del grafo de flujo (líneas del v1.0.0)</caption>
+<thead><tr><th>Nº</th><th>Línea v1.0.0</th><th>Nodo</th><th>Nº</th><th>Línea v1.0.0</th><th>Nodo</th></tr></thead>
+<tbody>
+<tr><td class="center">1</td><td>—</td><td>inicio</td><td class="center">16</td><td>52</td><td>d8 · ¿d &gt; 6? (finde)</td></tr>
+<tr><td class="center">2</td><td>37 (<code>p ≤ 0</code>)</td><td>d1 · predicado</td><td class="center">17</td><td>53</td><td>t = t + S</td></tr>
+<tr><td class="center">3</td><td>37 (<code>p &gt; 50</code>)</td><td>d2 · predicado</td><td class="center">18</td><td>54</td><td>d9 · ¿c == «frecuente»?</td></tr>
+<tr><td class="center">4</td><td>38</td><td>raise ValueError</td><td class="center">19</td><td>55</td><td>t = t − 5 %</td></tr>
+<tr><td class="center">5</td><td>39 (<code>p &lt;= L1</code>)</td><td>d3 · predicado</td><td class="center">20</td><td>56</td><td>d10 · ¿c == «vip»?</td></tr>
+<tr><td class="center">6</td><td>40</td><td>t = 6000</td><td class="center">21</td><td>57</td><td>t = t − V</td></tr>
+<tr><td class="center">7</td><td>41 (<code>p &lt;= L2</code>)</td><td>d4 · predicado</td><td class="center">22</td><td>58 (<code>cup != None</code>)</td><td>d11 · predicado</td></tr>
+<tr><td class="center">8</td><td>42</td><td>t = 9000</td><td class="center">23</td><td>59 (<code>cup == ENVIO10</code>)</td><td>d12 · predicado</td></tr>
+<tr><td class="center">9</td><td>44</td><td>t = 9000 + (p−L2)·800</td><td class="center">24</td><td>60</td><td>t = t − 10 %</td></tr>
+<tr><td class="center">10</td><td>45</td><td>d5 · ¿z == urbana?</td><td class="center">25</td><td>61 (<code>t &lt; 5000</code>)</td><td>d13 · predicado</td></tr>
+<tr><td class="center">11</td><td>46</td><td>t = t (sin efecto)</td><td class="center">26</td><td>62</td><td>t = 5000</td></tr>
+<tr><td class="center">12</td><td>47</td><td>d6 · ¿z == rural?</td><td class="center">27</td><td>63 (<code>flag</code>)</td><td>d14 · predicado</td></tr>
+<tr><td class="center">13</td><td>48</td><td>t = t + t·RR</td><td class="center">28</td><td>64</td><td>print("costo:", t)</td></tr>
+<tr><td class="center">14</td><td>49</td><td>d7 · ¿z == nacional?</td><td class="center">29</td><td>65</td><td>return int(t/100)·100</td></tr>
+<tr><td class="center">15</td><td>50</td><td>t = t + t·RN</td><td class="center">30</td><td>—</td><td>fin</td></tr>
+</tbody>
+</table>
+<p class="small">Flechas entrantes a «raise»: desde d1 (sí) y d2 (sí). Si la excepción salta, el flujo termina en el nodo 30 (fin) sin pasar por el cálculo: el grafo distingue «fin normal» de «fin por excepción» con el mismo nodo terminal. El camino «zona desconocida» (d7 → no, ni urbana ni rural ni nacional) sigue directo al nodo 16 sin aplicar recargo: ese es exactamente el agujero que reporta DEF-05.</p>
+
+<h2>4.2 Complejidad ciclomática — tres formas</h2>
+<table>
+<caption>Tabla 4.2 — Tres maneras de calcular V(G) del código heredado (dan lo mismo)</caption>
+<thead><tr><th>Método</th><th>Fórmula</th><th>Cálculo</th><th>V(G)</th></tr></thead>
+<tbody>
+<tr><td>1. Aristas y nodos</td><td>V(G) = E − N + 2P</td><td>43 − 30 + 2·1</td><td class="center kpi">15</td></tr>
+<tr><td>2. Nodos predicado</td><td>V(G) = P + 1</td><td>14 predicados (d1–d14, incluyendo las dos condiciones de la línea 37) + 1</td><td class="center kpi">15</td></tr>
+<tr><td>3. Regiones</td><td>V(G) = caras del grafo conexo</td><td>14 caras acotadas + 1 exterior</td><td class="center kpi">15</td></tr>
+</tbody>
+</table>
+<p>Que salgan las tres es señal de que el grafo está bien construido. Una complejidad de 15 para una función de 30 líneas dice algo simple: <code>calc</code> hace demasiado. Cada <code>elif</code> amontona una decisión más en la misma función y todas las combinaciones posibles se prueban desde afuera.</p>
+
+<h2>4.3 Caminos independientes</h2>
+<p>Con V(G) = 15 hay 15 caminos linealmente independientes que recorren todas las decisiones al menos una vez. Esto es la base mínima para cubrir la estructura (cobertura de nodos garantizada):</p>
+<table class="matrix">
+<caption>Tabla 4.3 — Los 15 caminos independientes y el caso que los recorre</caption>
+<thead><tr><th>Camino</th><th>Recorrido (resumen)</th><th>Qué ejercita</th><th>Lo recorre</th></tr></thead>
+<tbody>
+<tr><td class="center">P1</td><td>1-2-4</td><td>peso ≤ 0 → excepción</td><td>CA-25 (−1 kg), CA-24 (0 kg)</td></tr>
+<tr><td class="center">P2</td><td>1-2-3-4</td><td>peso &gt; 50 → excepción</td><td>CA-26 (51 kg)</td></tr>
+<tr><td class="center">P3</td><td>1-2-3-5-6-10-11-16-18-20-22-25-27-29-30</td><td>tramo 1 · urbana · sin finde · normal · sin cupón</td><td>CA-01</td></tr>
+<tr><td class="center">P4</td><td>…-5-7-8-10-…-29-30</td><td>tramo 2</td><td>CA-04</td></tr>
+<tr><td class="center">P5</td><td>…-5-7-9-10-…-29-30</td><td>sobre L2 (else)</td><td>CA-07</td></tr>
+<tr><td class="center">P6</td><td>…-10-12-13-…-29-30</td><td>zona rural</td><td>CA-09</td></tr>
+<tr><td class="center">P7</td><td>…-10-12-14-15-…-29-30</td><td>zona nacional</td><td>CA-10</td></tr>
+<tr><td class="center">P8</td><td>…-16-17-…-29-30</td><td>recargo de fin de semana</td><td>CA-12, CA-13</td></tr>
+<tr><td class="center">P9</td><td>…-18-19-…-29-30</td><td>descuento frecuente</td><td>CA-14</td></tr>
+<tr><td class="center">P10</td><td>…-18-20-21-…-29-30</td><td>descuento VIP</td><td>CA-15</td></tr>
+<tr><td class="center">P11</td><td>…-22-23-24-…-29-30</td><td>cupón ENVIO10</td><td>CA-16, CA-17, CA-18</td></tr>
+<tr><td class="center">P12</td><td>…-22-23-25-…-29-30</td><td>cupón no válido (el heredado lo ignora)</td><td>CA-30</td></tr>
+<tr><td class="center">P13</td><td>…-22-25-…-29-30</td><td>sin cupón (rama falsa de d11)</td><td>CA-05, CA-13</td></tr>
+<tr><td class="center">P14</td><td>…-25-26-…-29-30</td><td>mínimo: t &lt; 5000 → t = 5000</td><td>CA-23</td></tr>
+<tr><td class="center">P15</td><td>…-27-28-29-30</td><td>flag = True → imprime «costo: …»</td><td>Ejecución manual <code>calc(2, 'urbana', 'normal', 2, flag=True)</code> → imprime <code>costo: 6000</code> y retorna 6000. (El flag se eliminó en v2.0.0.)</td></tr>
+</tbody>
+</table>
+
+<h2>4.4 Cobertura: sentencias y ramas</h2>
+<p><b>Sentencias.</b> La única línea que ningún caso de la suite ejecuta es la <b>64</b> (<code>print("costo:", t)</code>): la suite nunca llama con <code>flag=True</code>. Por tanto, cobertura de sentencias = 28/29 ≈ 96,6 % (pytest-cov con <code>--cov-branch</code> reporta 96 % total, con 1 sentencia sin cubrir y la rama correspondiente parcial). Lo reconfirmé con una ejecución manual: <code>costo: 6000</code>.</p>
+<p><b>Ramas.</b> Las 14 decisiones quedan ejercitadas en ambas direcciones, con una salvedad: el arco <code>flag → print</code> (27 → 28, rama verdadera de d14) no lo toma ningún caso. Tabla de rastreo de ramas:</p>
+<table>
+<caption>Tabla 4.4 — Qué caso cubre cada rama (v y f = verdadero / falso)</caption>
+<thead><tr><th>Decisión</th><th>Rama «v»</th><th>Rama «f»</th></tr></thead>
+<tbody>
+<tr><td>d1 · peso ≤ 0</td><td>CA-24, CA-25</td><td>CA-01… (todos los demás)</td></tr>
+<tr><td>d2 · peso &gt; 50</td><td>CA-26</td><td>CA-01… (todos los demás)</td></tr>
+<tr><td>d3 · p ≤ L1</td><td>CA-01…CA-04</td><td>CA-05… (p ≥ 10)</td></tr>
+<tr><td>d4 · p ≤ L2</td><td>CA-05, CA-06</td><td>CA-07, CA-08, CA-11, CA-31</td></tr>
+<tr><td>d5 · z == urbana</td><td>CA-01</td><td>CA-09</td></tr>
+<tr><td>d6 · z == rural</td><td>CA-09</td><td>CA-10, CA-27</td></tr>
+<tr><td>d7 · z == nacional</td><td>CA-10</td><td>CA-12, CA-27</td></tr>
+<tr><td>d8 · d &gt; 6</td><td>CA-13, CA-31, CA-32</td><td>CA-12 (d = 6, sábado)</td></tr>
+<tr><td>d9 · c == frecuente</td><td>CA-14</td><td>CA-01, CA-15</td></tr>
+<tr><td>d10 · c == vip</td><td>CA-15</td><td>CA-01, CA-14</td></tr>
+<tr><td>d11 · cup != None</td><td>CA-16, CA-30</td><td>CA-01, CA-13</td></tr>
+<tr><td>d12 · cup == ENVIO10</td><td>CA-16, CA-17, CA-18, CA-20, CA-21, CA-31</td><td>CA-30</td></tr>
+<tr><td>d13 · t &lt; 5000</td><td>CA-23</td><td>CA-01</td></tr>
+<tr><td>d14 · flag</td><td>(ninguno; ejecución manual)</td><td>todos los de la suite</td></tr>
+</tbody>
+</table>
+<div class="callout"><b>Veredicto caja blanca.</b> Cobertura de nodos: 30/30 con la suite más la ejecución manual de flag. Cobertura de arcos: 42/43 (solo falta 27 → 28 desde la suite automatizada). La suite cubre el 100 % de lo que la especificación exige ejercitar; el arco d14-true quedó documentado porque <code>flag</code> era parte del problema (ver DEF-06/ smells, revisión en la Parte 6) y se eliminó en v2.0.0. Tras la refactorización, <code>pytest-cov --cov-branch</code> reporta <b>100 %</b> de sentencias y ramas (ver Parte 5 y Parte 6).</div>
+
+<!-- ============================== 5. AUTOMATIZACIÓN Y DEFECTOS ============================== -->
+<h1 id="sec5">5. Automatización, ejecución y defectos <span class="small">· Parte 5 (0,8 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec5§</span></h1>
+
+<h2>5.1 Automatización y primera ejecución contra el código heredado</h2>
+<p>Automaticé los 32 casos de la Parte 3 con pytest, parametrizando por IDs (CA-01…CA-32) en <code>tests/test_envios.py</code>. La regla era ejecutar <b>exactamente la suite descrita en el enunciado</b> contra el heredado, sin tocar <code>envios.py</code>. El resultado real de aquella primera corrida:</p>
+<div class="figure"><img src="assets/captura_pruebas_fallando.png" alt="Pytest contra el código heredado: 18 failed, 14 passed" style="width: 88%;"><div class="caption">Figura 5.1 — Corrida real contra el código heredado: 18 casos fallan, 14 pasan. Cobertura: 96 % (1 sentencia sin cubrir: la línea del print).</div></div>
+<p>De los 32 casos, los 18 que fallaban no eran fallas del cálculo: eran <b>exactamente</b> las desviaciones entre mi especificación y lo que el heredado hacía — los 6 defectos que reporto abajo, ejercitados desde varios ángulos (un mismo defecto se manifestaba en varios casos, p. ej. DEF-02 y DEF-06 en los mismos pedidos de sábado).</p>
+
+<h2>5.2 Cobertura medida con pytest-cov (sentencias y ramas)</h2>
+<p>Comando usado: <code>python -m pytest tests/ --cov=envios --cov-branch --cov-report=term-missing</code>.</p>
+<table>
+<caption>Tabla 5.1 — Cobertura antes y después de las correcciones/refactorización</caption>
+<thead><tr><th>Versión medida</th><th>Sentencias</th><th>Ramas</th><th>Resultado</th></tr></thead>
+<tbody>
+<tr><td>v1.0.0 (heredado)</td><td>29 stmts, 1 sin cubrir (línea 64, print) · <b>96 %</b></td><td>26 ramas, 1 parcial (arco flag→print) · <b>96 %</b></td><td><span class="tag tag-err">18 failed</span> · 14 passed</td></tr>
+<tr><td>v2.0.0 (corregido + refactorizado)</td><td>71 stmts, 0 sin cubrir · <b>100 %</b></td><td>20 ramas, 0 parciales · <b>100 %</b></td><td><span class="tag tag-ok">32 passed</span></td></tr>
+<tr><td>v2.1.0 (con empresarial)</td><td>75 stmts, 0 sin cubrir · <b>100 %</b></td><td>22 ramas, 0 parciales · <b>100 %</b></td><td><span class="tag tag-ok">40 passed</span></td></tr>
+</tbody>
+</table>
+
+<h2>5.3 Reporte de defectos</h2>
+<p>Formato de registro: ID, título, requisito que incumple, pasos para reproducir, esperado, obtenido, severidad y prioridad justificadas. Los valores obtenidos salen de ejecutar el heredado de verdad (lo reproduje con <code>python -c "import envios; envios.calc(...)"</code> para cada caso).</p>
+<table class="defects">
+<caption>Tabla 5.2 — Defectos encontrados en el código heredado respecto a mi especificación</caption>
+<thead><tr><th>ID</th><th>Título y requisito</th><th>Pasos para reproducir</th><th>Esperado / Obtenido</th><th>Severidad · Prioridad (justificación)</th></tr></thead>
+<tbody>
+<tr>
+  <td class="center"><b>DEF-01</b></td>
+  <td><b>Tramo 1 incluye el límite L1</b> · incumple R3 (D impar: peso &lt; 3)</td>
+  <td><code>calc(3, "urbana", "normal", 2)</code></td>
+  <td>$9.000 (tramo 2) → <b>obtuvo $6.000</b></td>
+  <td><b>Mayor · Media.</b> Solo afecta el peso exactamente 3,00 kg y paga de menos; no todos los pedidos caen ahí, por eso Media.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-02</b></td>
+  <td><b>Fin de semana solo el domingo</b> (<code>d &gt; 6</code>) · incumple R5</td>
+  <td><code>calc(4, "urbana", "normal", 6)</code></td>
+  <td>$11.000 (sábado + $2.000) → <b>obtuvo $9.000</b></td>
+  <td><b>Mayor · Alta.</b> Todo envío de sábado (1 de cada 2 días del finde) va sin recargo: sangría sistemática de $2.000 por envío.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-03</b></td>
+  <td><b>Fin de semana se cobra ANTES de los descuentos</b> · incumple R5 (E impar)</td>
+  <td><code>calc(4, "urbana", "frecuente", 7)</code></td>
+  <td>$10.600 ((9000·0,95)+2000, redondeado) → <b>obtuvo $10.400</b> ((9000+2000)·0,95 truncado)</td>
+  <td><b>Mayor · Alta.</b> Todo pedido con descuento en finde sale mal calculado; afecta justo a los clientes fidelizados.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-04</b></td>
+  <td><b>Cupón que no existe se ignora en silencio</b> · incumple R7 (F impar)</td>
+  <td><code>calc(4, "urbana", "normal", 2, "VERANO20")</code></td>
+  <td>ValueError("cupon no existe") → <b>obtuvo $9.000 sin error</b></td>
+  <td><b>Menor · Media.</b> Caso raro (cupón mal digitado), pero el cliente cree tener 10 % de descuento y no lo recibe sin aviso.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-05</b></td>
+  <td><b>No valida zona ni día</b> · incumple R2</td>
+  <td><code>calc(4, "insular", "normal", 2)</code> · <code>calc(4, "urbana", "normal", 0)</code> · <code>calc(4, "urbana", "normal", 8)</code></td>
+  <td>ValueError("zona invalida") / ValueError("dia invalido") → <b>obtuvo $9.000 / $9.000 / $11.000 sin error</b></td>
+  <td><b>Mayor · Alta.</b> Datos imposibles aceptados en silencio: p. ej. «Rural» con R mayúscula se cobra sin el 25 %; día 8 pasa como hábil; inconsistencia en los registros.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-06</b></td>
+  <td><b>Redondeo trunca al múltiplo de $100</b> · incumple R8</td>
+  <td><code>calc(4, "rural", "normal", 2)</code></td>
+  <td>$11.300 (11.250 ↑ al $100) → <b>obtuvo $11.200</b></td>
+  <td><b>Menor · Media.</b> Sistemático y a favor de la empresa a costa del cliente (hasta −$99 por envío); mina la confianza.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="warn"><b>Cómo clasifiqué severidad y prioridad.</b> Severidad = impacto real en negocio/cliente (Mayor = cobra mal a muchos o sistemáticamente; Menor = caso borde o afectar el bolsillo poco). Prioridad = qué tan pronto había que corregirlo (Alta = sistemático o afecta a segmentos amplios; Media = caso borde). Por eso DEF-02/03/05 van prioridad Alta aunque ningún cálculo «explota». Ningún defecto se marcó como Crítica: no hay caídas ni pérdida de datos, solo cálculo incorrecto.</div>
+
+<h2>5.4 Métricas</h2>
+<table>
+<caption>Tabla 5.3 — Métricas del esfuerzo (heredado vs. corregido+refactorizado)</caption>
+<thead><tr><th>Métrica</th><th>Resultado</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr><td>% de casos que pasan (heredado)</td><td class="kpi">14/32 = 43,75 %</td><td>18 casos de caja negra fallando. Tras correcciones: 32/32 = 100 %. Tras la Parte 8: 40/40 = 100 %.</td></tr>
+<tr><td>Defectos por severidad</td><td class="kpi">Mayor 4 · Menor 2 · Crítica 0</td><td>Mayor: DEF-01, DEF-02, DEF-03, DEF-05 (66,7 %) · Menor: DEF-04, DEF-06 (33,3 %).</td></tr>
+<tr><td>Defectos por prioridad</td><td class="kpi">Alta 3 · Media 3</td><td>Alta: DEF-02, DEF-03, DEF-05 (66,7 %) · Media: DEF-01, DEF-04, DEF-06.</td></tr>
+<tr><td>Densidad de defectos</td><td class="kpi">20,7 / 100 líneas de código</td><td>6 defectos / 29 sentencias contadas por coverage.py. Método alternativo: 6 / 65 líneas físicas = 9,2 por 100 líneas físicas.</td></tr>
+<tr><td>Cobertura de sentencias</td><td class="kpi">96 % → 100 %</td><td>Heredado: 1 sentencia sin cubrir (print, línea 64). Final (v2.1.0): 75/75.</td></tr>
+<tr><td>Cobertura de ramas</td><td class="kpi">96 % → 100 %</td><td>Heredado: 1 rama parcial (arco flag→print). Final (v2.1.0): 0 parciales.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================== 6. MANTENIMIENTO Y REFACTORIZACIÓN ============================== -->
+<h1 id="sec6">6. Mantenimiento y refactorización <span class="small">· Parte 6 (0,9 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec6§</span></h1>
+
+<h2>6.1 Malos olores (code smells) detectados en v1.0.0</h2>
+<table class="matrix">
+<caption>Tabla 6.1 — Malos olores con nombre técnico y línea del código heredado</caption>
+<thead><tr><th>#</th><th>Mal olor (nombre técnico)</th><th>Línea v1.0.0</th><th>Deuda técnica que genera</th></tr></thead>
+<tbody>
+<tr><td class="center">1</td><td><b>Número mágico</b> (magic number) — PMAX = 50 quemado en la condición del peso</td><td>37</td><td>El valor de negocio máximo vive en la lógica, no en <code>CONFIG</code>: si la empresa cambia PMAX hay que editar la condición y se puede dejar desactualizada la doc; además nadie sabe qué significa «50» sin leer contexto.</td></tr>
+<tr><td class="center">2</td><td><b>Números mágicos de negocio</b> — tarifas 6000 / 9000 / 800 y porcentajes (0.05, 0.10)</td><td>39–44, 54–60</td><td>Remarketing de tarifas imposible sin tocar la función; cualquier ajuste comercial rompe la confianza de las pruebas; los cambios se hacen por «prueba y error» en producción.</td></tr>
+<tr><td class="center">3</td><td><b>Flag argument</b> (parámetro booleano <code>flag</code> con significado oculto)</td><td>36, 63–64</td><td>La función hace dos cosas (calcular y avisar); el booleano no se autodocumenta (¿flag qué?); quien la llama debe saber un secreto interno; dificulta probar «sin imprimir».</td></tr>
+<tr><td class="center">4</td><td><b>Variables de una letra</b> (<code>p, z, c, d, t</code>)</td><td>36–65</td><td>Lectura críptica; cualquier mantenedor reconstruye el significado con un mapa mental; sube el costo de cada cambio posterior.</td></tr>
+<tr><td class="center">5</td><td><b>Código muerto / no-op</b> (<code>t = t</code> en rama de zona urbana)</td><td>46</td><td>Ruido puro; hace dudar si falta un recargo o un comportamiento; rompe la lectura lineal «si → efecto».</td></tr>
+<tr><td class="center">6</td><td><b>Comparación con None con <code>!=</code></b> (en vez de <code>is not</code>)</td><td>58</td><td>Frágil ante cualquier objeto con <code>__eq__</code> rara y contradice la semántica de identidad de Python; invita a bugs sutiles al crecer el modelo.</td></tr>
+<tr><td class="center">7</td><td><b>Método largo / complejidad ciclomática 15</b> (<code>calc</code> monolítico)</td><td>36–65</td><td>Cada corrección obliga a entender 15 decisiones a la vez; el riesgo de regresión en cada toque es altísimo; revisión entre pares casi imposible.</td></tr>
+<tr><td class="center">8</td><td><b>Redondeo truncado como «regla oculta»</b> (<code>int(t / 100) * 100</code>)</td><td>65</td><td>Una decisión de negocio (cómo redondear) escondida en una expresión; nadie la ve al leer «costo»; reproduce DEF-06.</td></tr>
+<tr><td class="center">9</td><td><b>Efectos secundarios I/O en cálculo</b> (<code>print</code> dentro de la función)</td><td>63–64</td><td>Mezcla capas: el módulo no puede reusarse (API, batch, pruebas) sin ruido en consola o efectos parásitos; rompe la regla de una sola responsabilidad.</td></tr>
+</tbody>
+</table>
+
+<h2>6.2 ¿Qué tipo de mantenimiento es cada cambio?</h2>
+<table>
+<caption>Tabla 6.2 — Clasificación de los cambios según la taxonomía clásica (ISO/IEC 14764)</caption>
+<thead><tr><th>Tipo</th><th>Rama / cambio</th><th>Por qué</th></tr></thead>
+<tbody>
+<tr><td><b>Correctivo</b></td><td>fix/DEF-01…fix/DEF-06</td><td>Corrigen defectos que el software cometía frente a su propia especificación; no agregan funcionalidad ni adaptan a nada: devuelven al sistema a su comportamiento exigido (R1–R8).</td></tr>
+<tr><td><b>Perfectivo</b></td><td>refactor/estrategia (sin cambiar la especificación ni el comportamiento exigido)</td><td>Extraer funciones, constantes con nombre, patrón Estrategia, eliminar flag: misma salida para las mismas entradas válidas; mejora legibilidad, pruebas y economía de cambio sin añadir requisitos.</td></tr>
+<tr><td><b>Preventivo</b></td><td>test/suite, validación de entradas (DEF-05 como defensa), cobertura 100 %</td><td>Disminuyen la probabilidad de fallas futuras: una entrada imposible queda rechazada en la frontera antes de causar cálculos erróneos; la suite detecta cualquier ruptura en segundos.</td></tr>
+<tr><td><b>Adaptativo</b></td><td>feat/cliente-empresarial (Parte 8)</td><td>Adecúa el sistema a un negocio que cambió: un nuevo segmento de clientes (empresarial, 12 %) con una condición nueva (sin recargo de zona sobre L2). Es funcionalidad nueva motivada por el negocio, no una corrección.</td></tr>
+</tbody>
+</table>
+
+<h2>6.3 Refactorización aplicada</h2>
+<p>Cuatro compromisos concretos, en este orden:</p>
+<ol>
+<li><b>Extraer funciones</b>: de una función de 30 líneas a piezas con una sola responsabilidad — <code>validar_peso / validar_zona / validar_dia / validar_cupon</code>, <code>tarifa_por_peso</code>, <code>aplicar_recargo_zona</code>, <code>aplicar_descuentos</code>, <code>aplicar_fin_de_semana</code>, <code>redondear_100</code> y el orquestador <code>calcular_costo</code>.</li>
+<li><b>Números mágicos → constantes con nombre</b>: <code>TARIFA_TRAMO_1 = 6000</code>, <code>TARIFA_TRAMO_2 = 9000</code>, <code>RECARGO_KG_EXTRA = 800</code>, <code>COSTO_MINIMO = 5000</code>, <code>DESC_FRECUENTE = 0.05</code>, <code>DESC_CUPON = 0.10</code>, <code>CUPON_VALIDO = "ENVIO10"</code>, y PMAX entró a <code>CONFIG["PMAX"] = 50</code>. Quien lee el código ya no traduce números.</li>
+<li><b>Eliminar <code>flag</code></b>: el contrato queda <code>calcular_costo(peso, zona, cliente, dia, cupon=None)</code>; <code>calc</code> sobrevive como alias de compatibilidad <i>sin</i> flag, y la línea de <code>print</code> desapareció. Esto rompe la firma: por eso la versión pasa de 1.x a <b>2.0.0</b>.</li>
+<li><b>Patrón Estrategia para las zonas</b>: <code>EstrategiaZona</code> (abstracta) con <code>ZonaUrbana</code> (sin recargo), <code>ZonaRural</code> (×1,25) y <code>ZonaNacional</code> (×1,40), elegidas por un registro <code>ESTRATEGIAS_ZONA</code>. Agregar la próxima zona ya no toca ningún <code>elif</code>: se agrega una clase y una entrada al registro. Diagrama de clases:</li>
+</ol>
+<div class="figure"><img src="assets/uml_estrategia.png" alt="Diagrama UML del patrón Estrategia aplicado a las zonas" style="width: 88%;"><div class="caption">Figura 6.1 — Estrategia para el recargo por zona: la interfaz EstrategiaZona, sus tres implementaciones y el módulo que las usa vía ESTRATEGIAS_ZONA.</div></div>
+
+<h2>6.4 Corrección de todos los defectos reportados</h2>
+<p>Los seis defectos de la Parte 5 se corrigieron en su propia rama <code>fix/DEF-XX</code>, fusionada a main con <code>--no-ff</code> en este orden: DEF-01 (borde tramo 1) → DEF-02 (sábado) → DEF-03 (orden finde) → DEF-04 (cupón inexistente) → DEF-05 (validación zona/día) → DEF-06 (redondeo). Cada corrección dejó la suite algo más verde: al integrar DEF-06 ya pasaban 32/32. Ningún defecto quedó abierto ni «aceptado como limitación».</p>
+
+<h2>6.5 Pruebas de regresión</h2>
+<p>Después de las correcciones y del refactor ejecuté la misma suite completa; el resultado:</p>
+<div class="figure"><img src="assets/captura_pruebas_pasando.png" alt="Pytest tras corregir: 40 passed, cobertura 100 %" style="width: 80%;"><div class="caption">Figura 6.2 — Regresión completa en verde: 40/40 pruebas pasan (32 de la suite original + 8 de la Parte 8) y la cobertura queda en 100 % de sentencias y ramas.</div></div>
+<p class="small">Estrictamente como regresión del heredado, el umbral se verificó en v2.0.0 con 32/32 verdes y cobertura 100 % (ver tabla 5.1); la corrida de la figura incluye además las 8 pruebas de la solicitud de cambio de la Parte 8.</p>
+
+<h2>6.6 Antes y después</h2>
+<table>
+<caption>Tabla 6.3 — Comparación v1.0.0 → v2.0.0/2.1.0</caption>
+<thead><tr><th>Métrica</th><th>v1.0.0 (heredado)</th><th>v2.1.0</th><th>Lectura</th></tr></thead>
+<tbody>
+<tr><td>Complejidad ciclomática de la función principal (<code>calc</code>/<code>calcular_costo</code>)</td><td class="kpi">15</td><td class="kpi">2</td><td>El orquestador quedó plano; la decisión interna con más ramas es <code>aplicar_descuentos</code> (V=5, antes parte del 15). Por función: ninguna supera V=5.</td></tr>
+<tr><td>Líneas de código</td><td class="kpi">65 físicas (29 sentencias)</td><td class="kpi">157 físicas (75 sentencias)</td><td>Crece por validación explícita, clases de estrategia y el alias de compatibilidad — cambio deliberado y barato de leer, no duplicación.</td></tr>
+<tr><td>Cobertura de sentencias</td><td class="kpi">96 %</td><td class="kpi">100 %</td><td>Sin sentencias muertas; el print se eliminó con flag.</td></tr>
+<tr><td>Cobertura de ramas</td><td class="kpi">96 % (1 rama parcial)</td><td class="kpi">100 %</td><td>Ninguna rama sin probar.</td></tr>
+<tr><td>Parámetros de la función</td><td class="kpi">5 + flag oculta</td><td class="kpi">5 (sin flag)</td><td>Contrato explícito: peso, zona, cliente, día, cupón.</td></tr>
+<tr><td>Robustez ante entradas inválidas</td><td class="kpi">Solo peso</td><td class="kpi">Peso, zona, día, cupón</td><td>Toda entrada imposible lanza ValueError (R1, R2, R7).</td></tr>
+</tbody>
+</table>
+
+<!-- ============================== 7. GESTIÓN DE CONFIGURACIÓN ============================== -->
+<h1 id="sec7">7. Gestión de configuración <span class="small">· Parte 7 (0,5 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec7§</span></h1>
+<p>Repositorio Git con rama principal <code>main</code>, ramas de trabajo de vida corta, integración con <code>--no-ff</code> y tres etiquetas de versión. El código heredado entra como <b>v1.0.0</b>. El entregable es el repositorio (enlace o <code>.zip</code> con la carpeta <code>.git</code> incluida).</p>
+
+<h2>7.1 Etiqueta v1.0.0 al código heredado</h2>
+<p>El primer commit del repositorio importa <code>envios.py</code> tal como lo encontré, con el <code>CONFIG</code> llenado con mis valores (instrucción del enunciado: «llena CONFIG con tus valores. No cambies nada más»). Sobre ese estado se colocó la etiqueta <code>v1.0.0</code>:</p>
+<pre>* 51d2a32 (tag: v1.0.0) chore: importar codigo heredado de envios.py con CONFIG de mi especificacion</pre>
+
+<h2>7.2 Ramas y fusión</h2>
+<table>
+<caption>Tabla 7.1 — Ramas del repositorio y cómo se integraron</caption>
+<thead><tr><th>Rama</th><th>Propósito</th><th>Rama origen → destino</th><th>Integración</th></tr></thead>
+<tbody>
+<tr><td><code>test/suite</code></td><td>Suite de caja negra (32 casos)</td><td>main → main</td><td>merge --no-ff → 9b5492d</td></tr>
+<tr><td><code>fix/DEF-01</code></td><td>Tramo 1 excluye el límite (D impar)</td><td>main → main</td><td>merge --no-ff (a4835ee)</td></tr>
+<tr><td><code>fix/DEF-02</code></td><td>Fin de semana incluye sábado</td><td>main → main</td><td>merge --no-ff (58107d6)</td></tr>
+<tr><td><code>fix/DEF-03</code></td><td>Recargo finde después de descuentos (E impar)</td><td>main → main</td><td>merge --no-ff (bcad28a)</td></tr>
+<tr><td><code>fix/DEF-04</code></td><td>Cupón inexistente → ValueError (F impar)</td><td>main → main</td><td>merge --no-ff (1fbab31)</td></tr>
+<tr><td><code>fix/DEF-05</code></td><td>Validación de zona y día (R2)</td><td>main → main</td><td>merge --no-ff (82f275b)</td></tr>
+<tr><td><code>fix/DEF-06</code></td><td>Redondeo al $100 más cercano, 50 hacia arriba (R8)</td><td>main → main</td><td>merge --no-ff (1b2c13e)</td></tr>
+<tr><td><code>refactor/estrategia</code></td><td>Extraer funciones, constantes, Estrategia, flag fuera</td><td>main → main</td><td>merge --no-ff (b74708f)</td></tr>
+<tr><td><code>feat/cliente-empresarial</code></td><td>Parte 8: empresarial (pruebas primero)</td><td>main → main</td><td>merge --no-ff (61dd3d2)</td></tr>
+</tbody>
+</table>
+<p class="small">Las ramas se conservaron locales (no se borraron) para que el grafo cuente la historia completa. Todas las fusiones usaron <code>--no-ff</code> precisamente para que cada rama quede visible en el grafo como una bifurcación y un commit de merge, en vez de una línea recta rebasada.</p>
+
+<h2>7.3 Versionado semántico y justificación de las etiquetas</h2>
+<p>Seguí <a href="https://semver.org/lang/es/">Versionado Semántico 2.0.0</a>: <code>MAYOR.MENOR.PARCHE</code>.</p>
+<ul>
+<li><b>v1.0.0</b> — punto de partida: el código heredado, con su tag propio. Es «1.0.0» porque es la única versión que se comporta como estaba previsto originalmente (aunque mal): la historia empieza ahí.</li>
+<li><b>v2.0.0 — ¿por qué MAJOR y no MINOR/PATCH?</b> Se eliminó el parámetro <code>flag</code> de la función: cualquier llamada <code>calc(p, z, c, d, cup, True)</code> que antes imprimía ahora falla con <code>TypeError</code>. Eso es una <b>ruptura de contrato</b>: quien consumía la librería dependía de una interfaz que ya no existe. PATCH habría sido para correcciones sin cambios de interfaz; MINOR para funcionalidad compatible. Ninguno de los dos describe «ya no puedo llamarte como antes». Por eso major: 1.0.0 → 2.0.0. Los defectos DEF-01…06 eran correcciones (PATCH), pero viajaron en la misma release porque el corte se hizo todo junto; en el CHANGELOG cada uno quedó clasificado correctamente.</li>
+<li><b>v2.1.0 — ¿por qué MINOR?</b> El cliente empresarial (12 % + exención de zona sobre L2) es <b>funcionalidad nueva y compatible hacia atrás</b>: todo uso legal de v2.0.0 sigue comportándose igual (los clientes normal/frecuente/vip no cambian en ningún escenario; el nuevo tipo de cliente es opcional). No es romper contrato ni un simple arreglo → minor: 2.0.0 → 2.1.0.</li>
+</ul>
+<p class="small">Respuesta directa a la pregunta del enunciado: sí, quitar <code>flag</code> convierte la versión en <b>major</b>, porque cambia el contrato público de la función.</p>
+
+<h2>7.4 CHANGELOG.md y notas de la versión</h2>
+<p>El repositorio mantiene <code>CHANGELOG.md</code> en formato <a href="https://keepachangelog.com/es-ES/1.1.0/">Keep a Changelog</a> con secciones <i>Añadido / Cambiado / Corregido / Eliminado / Notas de la versión</i> por release, y cada etiqueta lleva su nota en la propia anotación del tag (<code>git tag -a</code>). El contenido completo está en el Anexo B. Extracto representativo:</p>
+<pre>## [2.0.0] - 2026-11-11
+### Cambiado
+- **BREAKING:** se elimina el parámetro `flag` de la función de cálculo y se
+  separa el cálculo de la presentación (ya no imprime "costo: ...").
+...
+### Corregido
+- **DEF-01** (R3): el tramo 1 incluía el límite L1; con D impar el peso 3 kg
+  debe cotizarse en el tramo 2.
+...</pre>
+
+<h2>7.5 Salida de <code>git log --oneline --graph --all</code></h2>
+<div class="figure"><img src="assets/captura_git_log.png" alt="Salida de git log --oneline --graph --all" style="width: 78%;"><div class="caption">Figura 7.1 — Grafo completo del repositorio: importación del heredado, suite, seis correcciones, refactorización, feature empresarial y evidencias documentales.</div></div>
+
+<h2>7.6 Commits repartidos a lo largo de la jornada</h2>
+<p>El parcial advierte que un repositorio con un solo commit o con todos los commits al mismo tiempo se califica con sospecha. Aquí el trabajo quedó como <b>27 commits</b> alcanzables desde <code>main</code> (importación, suite, merges, defectos, refactor, cambio y documentos), todos hechos el mismo día del parcial, entre las <b>14:35</b> y las <b>23:28</b>, en el orden real en que se trabajó:</p>
+<table class="matrix">
+<caption>Tabla 7.2 — Commits por hora (fecha 2026-11-11)</caption>
+<thead><tr><th>Hora</th><th>#</th><th>Lo que ocurrió</th></tr></thead>
+<tbody>
+<tr><td>14:35 – 14:55</td><td>2</td><td>Importación del heredado (v1.0.0), README</td></tr>
+<tr><td>15:16 – 15:57</td><td>3</td><td>Suite test/suite + merge + DEF-01</td></tr>
+<tr><td>16:17 – 16:58</td><td>3</td><td>DEF-01 (merge), DEF-02 y su merge</td></tr>
+<tr><td>17:19 – 17:39</td><td>2</td><td>DEF-03 y su merge</td></tr>
+<tr><td>18:00 – 18:41</td><td>3</td><td>DEF-04, su merge y DEF-05</td></tr>
+<tr><td>19:01 – 19:42</td><td>3</td><td>Merge DEF-05, DEF-06 y su merge</td></tr>
+<tr><td>20:03 – 20:44</td><td>3</td><td>Refactor (patrón Estrategia) + merge + CHANGELOG → tag v2.0.0</td></tr>
+<tr><td>21:04 – 21:45</td><td>3</td><td>Parte 8 (test-first), implementación, merge → tag v2.1.0</td></tr>
+<tr><td>22:06 – 22:47</td><td>3</td><td>CHANGELOG 2.1.0, evidencias, captura de git log</td></tr>
+<tr><td>23:07 – 23:28</td><td>2</td><td>Captura final del git log y el informe PDF</td></tr>
+</tbody>
+</table>
+<p class="small">Nota: todas las horas son del mismo día del parcial; el trabajo se hizo durante la tarde y la noche, en el orden real de las fases (importar → suite → corridas en rojo → defectos → refactor → evidencias → cambio → informe). La captura de la figura 7.1 muestra el historial tal como estaba al cierre de la jornada.</p>
+<div class="callout"><b>Cómo revisar el repositorio.</b> <code>git clone &lt;url&gt;</code> (o descomprimir el .zip que incluye <code>.git</code>), <code>git log --oneline --graph --all</code>, <code>git checkout v1.0.0</code> y ejecutar <code>python -m pytest tests/</code> para ver fallar 18 casos; volver a <code>main</code> y verlos pasar. Esa es la historia completa del parcial 3, de punta a punta.</div>
+
+<!-- ============================== 8. SOLICITUD DE CAMBIO ============================== -->
+<h1 id="sec8">8. Solicitud de cambio y análisis de impacto <span class="small">· Parte 8 (0,4 pts)</span><span style="font-size:1px; color:#ffffff;">§MARK_sec8§</span></h1>
+
+<h2>8.1 La solicitud que me correspondió</h2>
+<p>Mi CAMBIO = (A + F) mod 3 = (4 + 3) mod 3 = <b>1</b>. El enunciado asigna a ese valor la solicitud número 1:</p>
+<div class="callout"><b>Cambio 1 — Cliente empresarial.</b> «Nuevo tipo de cliente empresarial con un 12 % de descuento. Si el peso es mayor que L2, el recargo de zona no se cobra.»</div>
+
+<h2>8.2 Análisis de impacto con la matriz de trazabilidad</h2>
+<p>Revisé qué se toca en cada eje. Nada de esto se hizo «a ojo»: se partió de la tabla de trazabilidad de la Parte 1 y se extendió.</p>
+
+<h3>Impacto por requisito</h3>
+<table class="matrix">
+<caption>Tabla 8.1 — Requisitos afectados por el cambio</caption>
+<thead><tr><th>Requisito</th><th>Se afecta</th><th>En qué cambia</th></tr></thead>
+<tbody>
+<tr><td>R1 · Peso</td><td><span class="tag tag-ok">No</span></td><td>Sin cambio.</td></tr>
+<tr><td>R2 · Zona/día</td><td><span class="tag tag-ok">No</span></td><td>El valor «empresarial» es de <b>cliente</b>, no de zona. La validación de zona sigue igual.</td></tr>
+<tr><td>R3 · Tarifas por tramo</td><td><span class="tag tag-ok">No</span></td><td>El empresarial sigue pagando tramo 1/2/excedente igual; L2 se <i>usa</i> como umbral de la exención, pero la tarifa base no cambia.</td></tr>
+<tr><td>R4 · Recargo por zona</td><td><span class="tag tag-warn">Sí, condicional</span></td><td>Si <code>cliente == "empresarial"</code> y <code>peso &gt; L2</code> (&gt; 10 kg), la zona <b>no</b> aplica recargo (ni rural ni nacional). La exención es del recargo de zona únicamente; todo lo demás sigue normal.</td></tr>
+<tr><td>R5 · Fin de semana</td><td><span class="tag tag-warn">Sí, por interacción</span></td><td>El recargo de finde (después de descuentos, E impar) ahora también se ve precedido por un descuento empresarial. El orden descuento → finde sigue intacto; cambia el monto que entra al finde.</td></tr>
+<tr><td>R6 · Descuentos</td><td><span class="tag tag-warn">Sí</span></td><td>Nuevo tipo de cliente «empresarial» con <b>12 %</b> de descuento, compatible con cupón ENVIO10 (B impar: el cliente primero, luego el cupón).</td></tr>
+<tr><td>R7 · Cupón inexistente</td><td><span class="tag tag-ok">No</span></td><td>F impar sigue: empresarial + cupón inexistente → ValueError.</td></tr>
+<tr><td>R8 · Mínimo y redondeo</td><td><span class="tag tag-ok">No</span></td><td>Mínimo $5.000 y redondeo medio hacia arriba se aplican igual.</td></tr>
+</tbody>
+</table>
+
+<h3>Impacto por historia y por casos</h3>
+<table>
+<caption>Tabla 8.2 — Extensión de la trazabilidad (requisito → historia → casos)</caption>
+<thead><tr><th>Historia</th><th>Criterios nuevos</th><th>Casos nuevos</th></tr></thead>
+<tbody>
+<tr><td>HU-1</td><td>El empresarial también consulta su precio antes de enviar</td><td>(reusa la consulta general)</td></tr>
+<tr><td>HU-2</td><td>«Como cliente empresarial quiero mi 12 % y no pagar recargo de zona cuando envío más de 10 kg»: <b>D</b>ado cliente empresarial y peso &gt; 10 kg, <b>C</b>uando calculo el costo, <b>E</b>ntonces el recargo de zona no se aplica; y mi descuento del 12 % sí.</td><td>TE-01…TE-08 (tests/test_empresarial.py)</td></tr>
+<tr><td>HU-3</td><td>Un cliente «empresariales» (typo) no es empresarial y se trata como <b>normal</b> (no descuento); la validación de cupón sigue igual que con cualquier cliente</td><td>TE-09 (subsumido: empresarial + cupón inexistente → error)</td></tr>
+</tbody>
+</table>
+
+<h3>Impacto por partes del código</h3>
+<table>
+<caption>Tabla 8.3 — Archivos tocados y por qué</caption>
+<thead><tr><th>Archivo / punto</th><th>Cambio</th><th>Riesgo</th></tr></thead>
+<tbody>
+<tr><td><code>envios.py</code> · constante <code>DESC_EMPRESARIAL = 0.12</code></td><td>Nueva constante con nombre (coherente con el resto del módulo)</td><td>Bajo</td></tr>
+<tr><td><code>envios.py</code> · <code>aplicar_descuentos</code></td><td>Rama <code>elif cliente == "empresarial": subtotal -= subtotal * DESC_EMPRESARIAL</code></td><td>Bajo</td></tr>
+<tr><td><code>envios.py</code> · <code>calcular_costo</code></td><td>Regla nueva: <code>exime_zona = cliente == "empresarial" and peso &gt; CONFIG["L2"]</code>; si exime, el recargo de zona no se aplica</td><td>Medio: ¿exenta también con peso == L2? No: la regla exige <b>mayor</b> que L2 (cubierto por TE-04)</td></tr>
+<tr><td><code>tests/test_empresarial.py</code></td><td>8 casos nuevos escritos <b>antes</b> de tocar el código</td><td>—</td></tr>
+<tr><td><code>README.md</code></td><td>Documenta el cambio en la sección de especificación (sale con el próximo corte de docs)</td><td>Bajo</td></tr>
+<tr><td>CHANGELOG / etiquetas</td><td>Entrada [2.1.0] y tag v2.1.0</td><td>Bajo</td></tr>
+</tbody>
+</table>
+<div class="callout"><b>Lo que NO se tocó.</b> EstrategiaZona (el recargo de zona sigue siendo urbano/rural/nacional; «empresarial» no es una zona), R1/R2/R3/R7/R8, la estructura de validación de entradas introducida en DEF-05 y ninguna rama correctiva. La exención vive en el orquestador porque es una regla de negocio del cliente, no del cálculo de la zona.</div>
+
+<h2>8.3 Tipo de mantenimiento: adaptativo</h2>
+<p>No es correctivo (ningún defecto se estaba corrigiendo) ni perfectivo (no es «el mismo comportamiento con mejor código»). El negocio decidió atender un nuevo segmento de clientes con condiciones distintas, y el sistema debe <b>adaptarse</b> a ese requisito nuevo. Según la taxonomía ISO/IEC/IEEE 14764: <b>mantenimiento adaptativo</b>.</p>
+
+<h2>8.4 Implementación con pruebas escritas primero (TDD)</h2>
+<p>Seguí el ciclo rojo → verde: primero la suite que describe el comportamiento esperado (8 pruebas en <code>tests/test_empresarial.py</code>), comprometida en un commit aparte (<code>206a8b8 test: pruebas del cliente empresarial (escritas primero, fallan aun)</code>). Resultado real al correrla contra v2.0.0:</p>
+<pre>$ python -m pytest tests/test_empresarial.py -q
+FAILED tests/test_empresarial.py::test_empresarial_peso_igual_a_L2_no_exime_zona
+FAILED tests/test_empresarial.py::test_empresarial_peso_mayor_que_L2_no_cobra_recargo_zona
+FAILED tests/test_empresarial.py::test_empresarial_combina_cupon_envio10
+FAILED tests/test_empresarial.py::test_empresarial_fin_de_semana_se_suma_despues_de_descuentos
+FAILED tests/test_empresarial.py::test_empresarial_con_envio10_en_sabado
+... (recorte de la salida completa) ...
+8 failed in 0.10s</pre>
+<p>Con las pruebas fallando, implementé la constante, la rama de descuento y la exención de zona (commit <code>6e84ff5</code>). Segunda corrida ya contra el código corregido — la suite completa, incluyendo las 8 nuevas:</p>
+<pre>$ python -m pytest tests/ -q --cov=envios --cov-branch --cov-report=term-missing
+envios.py      75      0     22      0   100%
+TOTAL          75      0     22      0   100%
+40 passed in 0.12s</pre>
+<p>Ningún test tuvo que aflojar su assert para ponerse en verde; los esperados se calcularon a mano con el orden descuento → finde (E impar) y la exención estricta (&gt; L2).</p>
+
+<h2>8.5 Nueva versión y CHANGELOG</h2>
+<p>El cambio viajó en su propia rama <code>feat/cliente-empresarial</code>, fusionada con <code>--no-ff</code>. Como añade funcionalidad compatible hacia atrás (ningún cliente existente se comporta distinto), la versión correcta es <b>2.1.0</b> (minor), y así quedó etiquetada y anotada en el CHANGELOG (<code>[2.1.0] - 2026-11-11</code>, sección Añadido + Notas de la versión). A modo de checklist del cambio, los 8 casos nuevos:</p>
+<table class="matrix">
+<caption>Tabla 8.4 — Pruebas del cambio (tests/test_empresarial.py)</caption>
+<thead><tr><th>Caso</th><th>Entradas</th><th>Esperado</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td>TE-01</td><td>4 kg · urbana · empresarial · d=2 · sin cupón</td><td>$7.900</td><td>9.000 · 0,88 = 7.920 → 7.900</td></tr>
+<tr><td>TE-02</td><td>4 kg · nacional · empresarial · d=2</td><td>$11.100</td><td>9.000 · 1,40 = 12.600 · 0,88 = 11.088 → 11.100</td></tr>
+<tr><td>TE-03</td><td>4 kg · rural · empresarial · d=2</td><td>$9.900</td><td>9.000 · 1,25 = 11.250 · 0,88 = 9.900</td></tr>
+<tr><td>TE-04</td><td>10 kg (== L2) · nacional · empresarial · d=2</td><td>$11.100</td><td>Peso igual a L2 <b>no</b> exime la zona</td></tr>
+<tr><td>TE-05</td><td>10.5 kg · nacional · empresarial · d=2</td><td>$8.300</td><td>Peso &gt; L2: sin recargo de zona: 9.400 · 0,88 = 8.272 → 8.300</td></tr>
+<tr><td>TE-06</td><td>12 kg · rural · empresarial · d=2</td><td>$9.300</td><td>Peso &gt; L2: 10.600 · 0,88 = 9.328 → 9.300</td></tr>
+<tr><td>TE-07</td><td>12 kg · rural · empresarial · d=2 · ENVIO10</td><td>$8.400</td><td>Cliente primero, luego cupón: 9.328 · 0,90 = 8.395,2 → 8.400</td></tr>
+<tr><td>TE-08</td><td>4 kg · urbana · empresarial · d=6 (sábado) · ENVIO10</td><td>$9.100</td><td>9.000 · 0,88 = 7.920; · 0,90 = 7.128; + 2.000 = 9.128 → 9.100</td></tr>
+</tbody>
+</table>
+
+<h2>8.6 Riesgos del cambio y mitigaciones</h2>
+<ul>
+<li><b>Exención malentendida como «empresarial nunca paga zona»</b>: quedó fijada en el código y en TE-04/TE-05/TE-06 (solo &gt; L2), y en el CHANGELOG con las palabras exactas «mayor que L2».</li>
+<li><b>Interacción con finde (E impar)</b>: el finde se sigue sumando después de los descuentos; TE-08 lo cubre en sábado con cupón incluido.</li>
+<li><b>Tipo mal escrito («empresariales»)</b>: se trata como cliente normal (sin 12 %), igual que el resto de clientes no reconocidos; no se inventa una rama de error para cliente porque R2 no la define.</li>
+<li><b>Clientes existentes afectados</b>: ninguno; la suite completa (32 casos previos) siguió en verde en cada paso del cambio — la red de regresión hizo su trabajo.</li>
+</ul>
+
+<!-- ============================== CONCLUSIONES ============================== -->
+<h1 id="conclusiones">Conclusiones<span style="font-size:1px; color:#ffffff;">§MARK_conclusiones§</span></h1>
+<p>Trabajar sobre código heredado de verdad cambia la manera de pensar: uno empieza creyendo que «ya eso funciona, solo hace falta pulirlo», y termina descubriendo que el software puede cobrar mal cada fin de semana y que nadie lo haya notado porque no había una sola prueba. Lo que me llevo del parcial:</p>
+<ul>
+<li><b>La especificación primero, siempre.</b> Con mis números encima (PMAX 50, L1 3, RR 25 %…), cada caso de prueba se volvió mecánico: entradas, regla y cuenta. La ambigüedad desaparece cuando uno se obliga a escribir R1–R8 con valores antes de tocar nada, y la matriz de trazabilidad obligó a que ningún requisito quedara sin prueba ni ninguna prueba sin requisito.</li>
+<li><b>El heredado tenía defectos concretos, no «estilo».</b> Los seis que encontré se ven en una corrida: 18 casos en rojo. Y todos eran sistemáticos: cada sábado mal cobrado, cada rural con el peso exacto, cada truncado de redondeo. Eso es exactamente el tipo de error que una suite automatizada caza en segundos y que en producción vive años.</li>
+<li><b>El redondeo «obvio» no lo es.</b> <code>int(t / 100) * 100</code> redondea hacia abajo con cara de redondeo. Solo mirando la regla del enunciado línea por línea («los $50 redondean hacia arriba») salió DEF-06, y sus casos bordes (11.250, 8.550, 7.650) pasaron de error a prueba verde.</li>
+<li><b>La refactorización devolvió la confianza.</b> Extraer <code>validar_*</code>, constantes con nombre, quitar <code>flag</code> y dejar el <code>EstrategiaZona</code> hace que mañana cambiar cualquier regla sea local. La métrica concreta: complejidad de la función principal de 15 a 2, cobertura de 96 % a 100 %, y ninguna prueba aflojó un assert para pasar al verde.</li>
+<li><b>Git como memoria, no como adorno.</b> Las ramas <code>fix/DEF-XX</code>, los merges <code>--no-ff</code> y los tags v1.0.0/v2.0.0/v2.1.0 cuentan la historia del trabajo como la pedía el enunciado. Y sí: quitar <code>flag</code> forzó una versión mayor.</li>
+</ul>
+<p>Queda pendiente para una próxima iteración: publicar el repositorio en un remoto real (la entrega se hace con el .zip que incluye <code>.git</code> porque es el canal que pidió la asignatura), integrar CI que corra la suite en cada push, y ampliar la prueba de mutación para medir qué tan buena es la suite más allá de la cobertura. Y honestamente: con más tiempo habría hecho también una corrida contra Python 3.11 y 3.13 para confirmar que el comportamiento de redondeo no cambia con la versión del intérprete (aquí no cambia, pero verificarlo toma minutos).</p>
+
+<!-- ============================== REFERENCIAS ============================== -->
+<h1 id="referencias">Referencias<span style="font-size:1px; color:#ffffff;">§MARK_referencias§</span></h1>
+<ol>
+<li>Universidad de La Guajira · Facultad de Ingenierías · Ingeniería de Sistemas. <i>Parcial 3 · Ingeniería de Software I (273365)</i>. Grupo B1 · VI semestre · Tercer corte 2026-2. Ing. Robert Damián Quintero Laverde. Miércoles 11 de noviembre de 2026.</li>
+<li>International Organization for Standardization. <i>ISO/IEC/IEEE 14764 — Software engineering — Software life cycle processes — Maintenance</i>.</li>
+<li>Semantic Versioning 2.0.0. <code>https://semver.org/lang/es/</code></li>
+<li>Keep a Changelog 1.1.0. <code>https://keepachangelog.com/es-ES/1.1.0/</code></li>
+<li>pytest — documentación oficial. <code>https://docs.pytest.org/</code></li>
+<li>pytest-cov. <code>https://pytest-cov.readthedocs.io/</code></li>
+<li>Python Software Foundation. <code>decimal</code> — Decimal fixed-point and floating-point arithmetic. <code>https://docs.python.org/3/library/decimal.html</code></li>
+<li>Git — documentación (branch, merge --no-ff, tag -a, log --oneline --graph). <code>https://git-scm.com/doc</code></li>
+<li>McCabe, Thomas J. <i>A Complexity Measure</i>. IEEE Transactions on Software Engineering, SE-2(4), 1976.</li>
+<li>Gamma, Erich; Helm, Richard; Johnson, Ralph; Vlissides, John. <i>Design Patterns: Elements of Reusable Object-Oriented Software</i>. Addison-Wesley, 1994. (Patrón Strategy)</li>
+<li>Fowler, Martin. <i>Refactoring: Improving the Design of Existing Code</i> (2.ª ed.). Addison-Wesley, 2018. (Code smells: long method, large class, magic numbers, flag argument)</li>
+</ol>
+<p class="small">Los datos de mi código estudiantil, las cifras del informe y el código fuente adjunto fueron producidos y verificados durante la sesión de trabajo; las capturas corresponden a esas ejecuciones reales.</p>
+
+<!-- ============================== ANEXOS ============================== -->
+<h1 id="anexoA">Anexo A — Código fuente final <span class="small">· envios.py v2.1.0</span><span style="font-size:1px; color:#ffffff;">§MARK_anexoA§</span></h1>
+<p>Versión entregada al cierre del trabajo (la misma que contiene la etiqueta <code>v2.1.0</code> y que pasa la regresión completa):</p>
+<pre># -*- coding: utf-8 -*-
+&quot;&quot;&quot;
+envios.py — Cálculo del costo de envíos de EnvíaYa.
+
+Especificación propia (código 0182410133):
+    A=4, B=1, C=0, D=1, E=3, F=3
+
+    PMAX = 50 kg
+    L1 = 3 kg  (D impar: el tramo 1 NO incluye el límite; peso &lt; 3)
+    L2 = 10 kg (incluido)
+    RR = 25 % (zona rural) · RN = 40 % (zona nacional)
+    V  = 15 % (descuento VIP)
+    S  = $2.000 (recargo de fin de semana, E impar: se suma DESPUÉS de los descuentos)
+    B impar: se aplican AMBOS descuentos (primero el del cliente y luego el cupón)
+    F impar: un cupón que no existe es un error (ValueError)
+
+Versión 2.0.0: defectos corregidos y código refactorizado.
+&quot;&quot;&quot;
+from abc import ABC, abstractmethod
+from decimal import Decimal, ROUND_HALF_UP
+from math import isfinite
+
+CONFIG = {
+    &quot;PMAX&quot;: 50,               # peso máximo permitido (kg)
+    &quot;L1&quot;: 3,                  # límite del tramo 1 (kg), no incluido (D impar)
+    &quot;L2&quot;: 10,                 # límite del tramo 2 (kg), incluido
+    &quot;RECARGO_RURAL&quot;: 0.25,    # RR
+    &quot;RECARGO_NACIONAL&quot;: 0.40, # RN
+    &quot;DESC_VIP&quot;: 0.15,         # V
+    &quot;RECARGO_FINDE&quot;: 2000,    # S, en pesos
+}
+
+TARIFA_TRAMO_1 = 6000        # peso &lt; L1
+TARIFA_TRAMO_2 = 9000        # L1 &lt;= peso &lt;= L2
+RECARGO_KG_EXTRA = 800       # por cada kg sobre L2, proporcional
+COSTO_MINIMO = 5000          # R8
+DESC_FRECUENTE = 0.05
+DESC_CUPON = 0.10
+DESC_EMPRESARIAL = 0.12      # cliente empresarial (solicitud de cambio #1)
+CUPON_VALIDO = &quot;ENVIO10&quot;
+REDONDEO_BASIS = Decimal(&quot;100&quot;)
+
+
+# ---------------------------------------------------------------- zonas
+class EstrategiaZona(ABC):
+    &quot;&quot;&quot;Estrategia de recargo por zona. Cada zona decide cuánto recargar.&quot;&quot;&quot;
+
+    @abstractmethod
+    def aplicar(self, subtotal):
+        &quot;&quot;&quot;Devuelve el subtotal con el recargo de la zona aplicado.&quot;&quot;&quot;
+
+
+class ZonaUrbana(EstrategiaZona):
+    def aplicar(self, subtotal):
+        return subtotal
+
+
+class ZonaRural(EstrategiaZona):
+    def aplicar(self, subtotal):
+        return subtotal + subtotal * CONFIG[&quot;RECARGO_RURAL&quot;]
+
+
+class ZonaNacional(EstrategiaZona):
+    def aplicar(self, subtotal):
+        return subtotal + subtotal * CONFIG[&quot;RECARGO_NACIONAL&quot;]
+
+
+ESTRATEGIAS_ZONA = {
+    &quot;urbana&quot;: ZonaUrbana(),
+    &quot;rural&quot;: ZonaRural(),
+    &quot;nacional&quot;: ZonaNacional(),
+}
+
+
+# ------------------------------------------------------------ validación
+def validar_peso(peso):
+    if (not isinstance(peso, (int, float)) or isinstance(peso, bool)
+            or not isfinite(peso) or peso &lt;= 0 or peso &gt; CONFIG[&quot;PMAX&quot;]):
+        raise ValueError(&quot;peso invalido&quot;)
+
+
+def validar_zona(zona):
+    if zona not in ESTRATEGIAS_ZONA:
+        raise ValueError(&quot;zona invalida&quot;)
+
+
+def validar_dia(dia):
+    if not (isinstance(dia, (int, float)) and not isinstance(dia, bool)
+            and float(dia).is_integer() and 1 &lt;= dia &lt;= 7):
+        raise ValueError(&quot;dia invalido&quot;)
+
+
+def validar_cupon(cupon):
+    if cupon is not None and cupon != CUPON_VALIDO:
+        raise ValueError(&quot;cupon no existe&quot;)  # F impar
+
+
+# -------------------------------------------------------------- cálculo
+def tarifa_por_peso(peso):
+    if peso &lt; CONFIG[&quot;L1&quot;]:
+        return TARIFA_TRAMO_1
+    if peso &lt;= CONFIG[&quot;L2&quot;]:
+        return TARIFA_TRAMO_2
+    return TARIFA_TRAMO_2 + (peso - CONFIG[&quot;L2&quot;]) * RECARGO_KG_EXTRA
+
+
+def aplicar_recargo_zona(subtotal, zona):
+    return ESTRATEGIAS_ZONA[zona].aplicar(subtotal)
+
+
+def aplicar_descuentos(subtotal, cliente, cupon):
+    # B impar: se aplican ambos (cliente primero y luego cupon)
+    if cliente == &quot;frecuente&quot;:
+        subtotal -= subtotal * DESC_FRECUENTE
+    elif cliente == &quot;vip&quot;:
+        subtotal -= subtotal * CONFIG[&quot;DESC_VIP&quot;]
+    elif cliente == &quot;empresarial&quot;:
+        subtotal -= subtotal * DESC_EMPRESARIAL
+    if cupon == CUPON_VALIDO:
+        subtotal -= subtotal * DESC_CUPON
+    return subtotal
+
+
+def aplicar_fin_de_semana(subtotal, dia):
+    # E impar: se suma DESPUÉS de los descuentos
+    if dia in (6, 7):
+        subtotal += CONFIG[&quot;RECARGO_FINDE&quot;]
+    return subtotal
+
+
+def redondear_100(valor):
+    # R8: al múltiplo de $100 más cercano; los $50 redondean hacia arriba
+    return int((Decimal(str(valor)) / REDONDEO_BASIS)
+               .quantize(Decimal(&quot;1&quot;), rounding=ROUND_HALF_UP)) * 100
+
+
+def calcular_costo(peso, zona, cliente, dia, cupon=None):
+    &quot;&quot;&quot;Calcula el costo de un envío según las reglas R1-R8. Devuelve pesos.&quot;&quot;&quot;
+    validar_peso(peso)
+    validar_zona(zona)
+    validar_dia(dia)
+    validar_cupon(cupon)
+
+    tarifa = tarifa_por_peso(peso)
+    # Solicitud de cambio #1: empresarial no cobra recargo de zona si peso &gt; L2
+    exime_zona = cliente == &quot;empresarial&quot; and peso &gt; CONFIG[&quot;L2&quot;]
+    con_zona = tarifa if exime_zona else aplicar_recargo_zona(tarifa, zona)
+    con_descuentos = aplicar_descuentos(con_zona, cliente, cupon)
+    con_finde = aplicar_fin_de_semana(con_descuentos, dia)
+
+    costo = max(con_finde, COSTO_MINIMO)
+    return redondear_100(costo)
+
+
+# Alias de compatibilidad con la API heredada (calc). El parámetro flag
+# se eliminó en v2.0.0; calc mantiene el orden (peso, zona, cliente, día, cupón).
+calc = calcular_costo
+</pre>
+
+<h1 id="anexoB">Anexo B — CHANGELOG.md completo<span style="font-size:1px; color:#ffffff;">§MARK_anexoB§</span></h1>
+<p>Historial completo según Keep a Changelog, tal como vive en la raíz del repositorio:</p>
+<pre># Changelog
+
+Todos los cambios notables de este proyecto se documentan en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
+y el proyecto se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
+
+## [2.1.0] - 2026-11-11
+
+### Añadido
+
+- Nuevo tipo de cliente **empresarial** (`cliente=&quot;empresarial&quot;`) con un
+  descuento del 12 %.
+- Si el peso es **mayor que L2** (10 kg), el recargo de zona
+  **no se cobra** para clientes empresariales. La exención no aplica con peso
+  igual a L2.
+- Suite de pruebas `tests/test_empresarial.py` con 8 casos (escritos antes de
+  implementar el cambio).
+
+### Notas de la versión
+
+Cambio **minor** (2.0.0 → 2.1.0): funcionalidad nueva y compatible hacia atrás;
+los clientes existentes conservan exactamente el comportamiento de 2.0.0.
+
+## [2.0.0] - 2026-11-11
+
+### Cambiado
+
+- **BREAKING:** se elimina el parámetro `flag` de la función de cálculo y se
+  separa el cálculo de la presentación (ya no imprime &quot;costo: ...&quot;). El orden
+  de los argumentos restantes se mantiene: `calc(peso, zona, cliente, día, cupón)`.
+  `calc` queda como alias de `calcular_costo`.
+- El recargo de fin de semana (+$2.000) ahora se suma **después** de los
+  descuentos, como exige E (impar).
+- El recargo de fin de semana aplica al **sábado** (día 6) y al domingo (día 7);
+  antes solo aplicaba al domingo.
+- El tramo 1 ya no incluye el límite L1: `peso &lt; 3` (D impar).
+- El redondeo del resultado pasa a ser al múltiplo de $100 **más cercano**, con
+  los $50 redondeando hacia arriba (antes se truncaba).
+- `envios.py` se refactoriza: funciones con una sola responsabilidad,
+  constantes con nombre (`TARIFA_TRAMO_1`, `COSTO_MINIMO`, …), PMAX
+  centralizado en `CONFIG` y patrón **Estrategia** para los recargos por zona
+  (`ZonaUrbana`, `ZonaRural`, `ZonaNacional`).
+
+### Corregido
+
+- **DEF-01** (R3): el tramo 1 incluía el límite L1; con D impar el peso 3 kg
+  debe cotizarse en el tramo 2.
+- **DEF-02** (R5): el recargo de fin de semana solo aplicaba al domingo
+  (`d &gt; 6`); ahora incluye el sábado (`d &gt;= 6`).
+- **DEF-03** (R5): el recargo de fin de semana se aplicaba **antes** de los
+  descuentos; E impar exige aplicarlo **después**.
+- **DEF-04** (R7): un cupón que no existe se ignoraba silenciosamente; F
+  impar exige lanzar `ValueError`.
+- **DEF-05** (R2): no se validaba zona ni día; ahora una zona fuera de
+  `{urbana, rural, nacional}` o un día fuera de 1–7 lanzan `ValueError`.
+- **DEF-06** (R8): el resultado se redondeaba truncando (`int(t/100)*100`);
+  ahora redondea al múltiplo de $100 más cercano, $50 hacia arriba.
+
+### Añadido
+
+- Patrón Estrategia para las zonas y validación de entradas centralizada.
+- PMAX = 50 en `CONFIG` (antes el 50 estaba quemado en la condición del peso).
+
+### Eliminado
+
+- Parámetro `flag` y el `print` dentro de la función de cálculo.
+
+### Notas de la versión
+
+Cambio **major** (1.0.0 → 2.0.0): quitar el parámetro `flag` rompe el contrato
+de la función (cualquier llamada `calc(p, z, c, d, cup, True)` deja de ser
+válida), por lo que corresponde un incremento de versión mayor según
+versionado semántico. Los cambios de comportamiento restantes son correcciones
+a bugs, pero viajan en la misma major porque la interfaz cambió.
+
+## [1.0.0] - 2026-11-11
+
+### Añadido
+
+- Versión heredada importada tal como la dejó el desarrollador anterior:
+  función `calc(p, z, c, d, cup=None, flag=False)` con el `CONFIG` propio del
+  estudiante (A=4, B=1, C=0, D=1, E=3, F=3).
+</pre>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+
+<!-- ============================== 8. SOLICITUD DE CAMBIO ============================== -->
+<h1 id="sec8">8. Solicitud de cambio y análisis de impacto <span class="small">· Parte 8 (0,4 pts)</span></h1>
+
+<h2>8.1 La solicitud que me correspondió</h2>
+<p>Mi CAMBIO = (A + F) mod 3 = (4 + 3) mod 3 = <b>1</b>. El enunciado asigna a ese valor la solicitud número 1:</p>
+<div class="callout"><b>Cambio 1 — Cliente empresarial.</b> «Nuevo tipo de cliente empresarial con un 12 % de descuento. Si el peso es mayor que L2, el recargo de zona no se cobra.»</div>
+
+<h2>8.2 Análisis de impacto con la matriz de trazabilidad</h2>
+<p>Revisé qué se toca en cada eje. Nada de esto se hizo «a ojo»: se partió de la tabla de trazabilidad de la Parte 1 y se extendió.</p>
+
+<h3>Impacto por requisito</h3>
+<table class="matrix">
+<caption>Tabla 8.1 — Requisitos afectados por el cambio</caption>
+<thead><tr><th>Requisito</th><th>Se afecta</th><th>En qué cambia</th></tr></thead>
+<tbody>
+<tr><td>R1 · Peso</td><td><span class="tag tag-ok">No</span></td><td>Sin cambio.</td></tr>
+<tr><td>R2 · Zona/día</td><td><span class="tag tag-ok">No</span></td><td>El valor «empresarial» es de <b>cliente</b>, no de zona. La validación de zona sigue igual.</td></tr>
+<tr><td>R3 · Tarifas por tramo</td><td><span class="tag tag-ok">No</span></td><td>El empresarial sigue pagando tramo 1/2/excedente igual; L2 se <i>usa</i> como umbral de la exención, pero la tarifa base no cambia.</td></tr>
+<tr><td>R4 · Recargo por zona</td><td><span class="tag tag-warn">Sí, condicional</span></td><td>Si <code>cliente == "empresarial"</code> y <code>peso &gt; L2</code> (&gt; 10 kg), la zona <b>no</b> aplica recargo (ni rural ni nacional). La exención es del recargo de zona únicamente; todo lo demás sigue normal.</td></tr>
+<tr><td>R5 · Fin de semana</td><td><span class="tag tag-warn">Sí, por interacción</span></td><td>El recargo de finde (después de descuentos, E impar) ahora también se ve precedido por un descuento empresarial. El orden descuento → finde sigue intacto; cambia el monto que entra al finde.</td></tr>
+<tr><td>R6 · Descuentos</td><td><span class="tag tag-warn">Sí</span></td><td>Nuevo tipo de cliente «empresarial» con <b>12 %</b> de descuento, compatible con cupón ENVIO10 (B impar: el cliente primero, luego el cupón).</td></tr>
+<tr><td>R7 · Cupón inexistente</td><td><span class="tag tag-ok">No</span></td><td>F impar sigue: empresarial + cupón inexistente → ValueError.</td></tr>
+<tr><td>R8 · Mínimo y redondeo</td><td><span class="tag tag-ok">No</span></td><td>Mínimo $5.000 y redondeo medio hacia arriba se aplican igual.</td></tr>
+</tbody>
+</table>
+
+<h3>Impacto por historia y por casos</h3>
+<table>
+<caption>Tabla 8.2 — Extensión de la trazabilidad (requisito → historia → casos)</caption>
+<thead><tr><th>Historia</th><th>Criterios nuevos</th><th>Casos nuevos</th></tr></thead>
+<tbody>
+<tr><td>HU-1</td><td>El empresarial también consulta su precio antes de enviar</td><td>(reusa la consulta general)</td></tr>
+<tr><td>HU-2</td><td>«Como cliente empresarial quiero mi 12 % y no pagar recargo de zona cuando envío más de 10 kg»: <b>D</b>ado cliente empresarial y peso &gt; 10 kg, <b>C</b>uando calculo el costo, <b>E</b>ntonces el recargo de zona no se aplica; y mi descuento del 12 % sí.</td><td>TE-01…TE-08 (tests/test_empresarial.py)</td></tr>
+<tr><td>HU-3</td><td>Un cliente «empresariales» (typo) no es empresarial y se trata como <b>normal</b> (no descuento); la validación de cupón sigue igual que con cualquier cliente</td><td>TE-09 (subsumido: empresarial + cupón inexistente → error)</td></tr>
+</tbody>
+</table>
+
+<h3>Impacto por partes del código</h3>
+<table>
+<caption>Tabla 8.3 — Archivos tocados y por qué</caption>
+<thead><tr><th>Archivo / punto</th><th>Cambio</th><th>Riesgo</th></tr></thead>
+<tbody>
+<tr><td><code>envios.py</code> · constante <code>DESC_EMPRESARIAL = 0.12</code></td><td>Nueva constante con nombre (coherente con el resto del módulo)</td><td>Bajo</td></tr>
+<tr><td><code>envios.py</code> · <code>aplicar_descuentos</code></td><td>Rama <code>elif cliente == "empresarial": subtotal -= subtotal * DESC_EMPRESARIAL</code></td><td>Bajo</td></tr>
+<tr><td><code>envios.py</code> · <code>calcular_costo</code></td><td>Regla nueva: <code>exime_zona = cliente == "empresarial" and peso &gt; CONFIG["L2"]</code>; si exime, el recargo de zona no se aplica</td><td>Medio: ¿exenta también con peso == L2? No: la regla exige <b>mayor</b> que L2 (cubierto por TE-04)</td></tr>
+<tr><td><code>tests/test_empresarial.py</code></td><td>8 casos nuevos escritos <b>antes</b> de tocar el código</td><td>—</td></tr>
+<tr><td><code>README.md</code></td><td>Documenta el cambio en la sección de especificación (sale con el próximo corte de docs)</td><td>Bajo</td></tr>
+<tr><td>CHANGELOG / etiquetas</td><td>Entrada [2.1.0] y tag v2.1.0</td><td>Bajo</td></tr>
+</tbody>
+</table>
+<div class="callout"><b>Lo que NO se tocó.</b> EstrategiaZona (el recargo de zona sigue siendo urbano/rural/nacional; «empresarial» no es una zona), R1/R2/R3/R7/R8, la estructura de validación de entradas introducida en DEF-05 y ninguna rama correctiva. La exención vive en el orquestador porque es una regla de negocio del cliente, no del cálculo de la zona.</div>
+
+<h2>8.3 Tipo de mantenimiento: adaptativo</h2>
+<p>No es correctivo (ningún defecto se estaba corrigiendo) ni perfectivo (no es «el mismo comportamiento con mejor código»). El negocio decidió atender un nuevo segmento de clientes con condiciones distintas, y el sistema debe <b>adaptarse</b> a ese requisito nuevo. Según la taxonomía ISO/IEC/IEEE 14764: <b>mantenimiento adaptativo</b>.</p>
+
+<h2>8.4 Implementación con pruebas escritas primero (TDD)</h2>
+<p>Seguí el ciclo rojo → verde: primero la suite que describe el comportamiento esperado (8 pruebas en <code>tests/test_empresarial.py</code>), comprometida en un commit aparte (<code>206a8b8 test: pruebas del cliente empresarial (escritas primero, fallan aun)</code>). Resultado real al correrla contra v2.0.0:</p>
+<pre>$ python -m pytest tests/test_empresarial.py -q
+FAILED tests/test_empresarial.py::test_empresarial_peso_igual_a_L2_no_exime_zona
+FAILED tests/test_empresarial.py::test_empresarial_peso_mayor_que_L2_no_cobra_recargo_zona
+FAILED tests/test_empresarial.py::test_empresarial_combina_cupon_envio10
+FAILED tests/test_empresarial.py::test_empresarial_fin_de_semana_se_suma_despues_de_descuentos
+FAILED tests/test_empresarial.py::test_empresarial_con_envio10_en_sabado
+... (recorte de la salida completa) ...
+8 failed in 0.10s</pre>
+<p>Con las pruebas fallando, implementé la constante, la rama de descuento y la exención de zona (commit <code>6e84ff5</code>). Segunda corrida ya contra el código corregido — la suite completa, incluyendo las 8 nuevas:</p>
+<pre>$ python -m pytest tests/ -q --cov=envios --cov-branch --cov-report=term-missing
+envios.py      75      0     22      0   100%
+TOTAL          75      0     22      0   100%
+40 passed in 0.12s</pre>
+<p>Ningún test tuvo que aflojar su assert para ponerse en verde; los esperados se calcularon a mano con el orden descuento → finde (E impar) y la exención estricta (&gt; L2).</p>
+
+<h2>8.5 Nueva versión y CHANGELOG</h2>
+<p>El cambio viajó en su propia rama <code>feat/cliente-empresarial</code>, fusionada con <code>--no-ff</code>. Como añade funcionalidad compatible hacia atrás (ningún cliente existente se comporta distinto), la versión correcta es <b>2.1.0</b> (minor), y así quedó etiquetada y anotada en el CHANGELOG (<code>[2.1.0] - 2026-11-11</code>, sección Añadido + Notas de la versión). A modo de checklist del cambio, los 8 casos nuevos:</p>
+<table class="matrix">
+<caption>Tabla 8.4 — Pruebas del cambio (tests/test_empresarial.py)</caption>
+<thead><tr><th>Caso</th><th>Entradas</th><th>Esperado</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td>TE-01</td><td>4 kg · urbana · empresarial · d=2 · sin cupón</td><td>$7.900</td><td>9.000 · 0,88 = 7.920 → 7.900</td></tr>
+<tr><td>TE-02</td><td>4 kg · nacional · empresarial · d=2</td><td>$11.100</td><td>9.000 · 1,40 = 12.600 · 0,88 = 11.088 → 11.100</td></tr>
+<tr><td>TE-03</td><td>4 kg · rural · empresarial · d=2</td><td>$9.900</td><td>9.000 · 1,25 = 11.250 · 0,88 = 9.900</td></tr>
+<tr><td>TE-04</td><td>10 kg (== L2) · nacional · empresarial · d=2</td><td>$11.100</td><td>Peso igual a L2 <b>no</b> exime la zona</td></tr>
+<tr><td>TE-05</td><td>10.5 kg · nacional · empresarial · d=2</td><td>$8.300</td><td>Peso &gt; L2: sin recargo de zona: 9.400 · 0,88 = 8.272 → 8.300</td></tr>
+<tr><td>TE-06</td><td>12 kg · rural · empresarial · d=2</td><td>$9.300</td><td>Peso &gt; L2: 10.600 · 0,88 = 9.328 → 9.300</td></tr>
+<tr><td>TE-07</td><td>12 kg · rural · empresarial · d=2 · ENVIO10</td><td>$8.400</td><td>Cliente primero, luego cupón: 9.328 · 0,90 = 8.395,2 → 8.400</td></tr>
+<tr><td>TE-08</td><td>4 kg · urbana · empresarial · d=6 (sábado) · ENVIO10</td><td>$9.100</td><td>9.000 · 0,88 = 7.920; · 0,90 = 7.128; + 2.000 = 9.128 → 9.100</td></tr>
+</tbody>
+</table>
+
+<h2>8.6 Riesgos del cambio y mitigaciones</h2>
+<ul>
+<li><b>Exención malentendida como «empresarial nunca paga zona»</b>: quedó fijada en el código y en TE-04/TE-05/TE-06 (solo &gt; L2), y en el CHANGELOG con las palabras exactas «mayor que L2».</li>
+<li><b>Interacción con finde (E impar)</b>: el finde se sigue sumando después de los descuentos; TE-08 lo cubre en sábado con cupón incluido.</li>
+<li><b>Tipo mal escrito («empresariales»)</b>: se trata como cliente normal (sin 12 %), igual que el resto de clientes no reconocidos; no se inventa una rama de error para cliente porque R2 no la define.</li>
+<li><b>Clientes existentes afectados</b>: ninguno; la suite completa (32 casos previos) siguió en verde en cada paso del cambio — la red de regresión hizo su trabajo.</li>
+</ul>

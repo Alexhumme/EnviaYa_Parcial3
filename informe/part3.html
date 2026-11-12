@@ -1,0 +1,125 @@
+
+<!-- ============================== 1. REQUISITOS ============================== -->
+<h1 id="sec1">1. Requisitos y criterios de aceptación <span class="small">· Parte 1 (0,4 pts)</span></h1>
+
+<h2>1.1 Especificación propia (R1–R8)</h2>
+<p>Esta es mi especificación completa, con mis números ya puestos. La redactó a partir del enunciado y de los parámetros de mi código; cada regla indica con su ID la fuente. Los valores límite llevan la aclaración de mi paridad (D impar excluye L1 del tramo 1, E impar pone el fin de semana después de los descuentos, B impar combina los dos descuentos y F impar convierte un cupón inexistente en error).</p>
+
+<table>
+<caption>Tabla 1.1 — Especificación propia del cálculo del costo</caption>
+<thead><tr><th>ID</th><th>Regla (con mis valores)</th></tr></thead>
+<tbody>
+<tr><td class="center">R1</td><td>El peso debe cumplir <b>0 &lt; peso ≤ 50 kg</b> (PMAX = 30 + 5·4 = 50). Admite decimales. Si no se cumple, se lanza <code>ValueError("peso invalido")</code>.</td></tr>
+<tr><td class="center">R2</td><td>La zona debe ser <b>urbana</b>, <b>rural</b> o <b>nacional</b>; el día debe ser un entero entre 1 y 7 (6 = sábado, 7 = domingo). Si zona o día no son válidos, se lanza <code>ValueError</code>.</td></tr>
+<tr><td class="center">R3</td><td><b>Tramo 1</b> (D impar: <code>peso &lt; 3 kg</code>): $6.000. <b>Tramo 2</b> (<code>3 ≤ peso ≤ 10</code>): $9.000. <b>Sobre L2</b> (peso &gt; 10 kg): $9.000 + $800 por cada kg sobre 10, de forma proporcional (admite decimales).</td></tr>
+<tr><td class="center">R4</td><td><b>Recargo por zona</b>: rural <b>+25 %</b> (RR = 25 %), nacional <b>+40 %</b> (RN = 40 %), urbana: sin recargo. Se aplica sobre el subtotal de la tarifa.</td></tr>
+<tr><td class="center">R5</td><td><b>Fin de semana</b> (día 6 = sábado y día 7 = domingo): <b>+$2.000</b> (S = $2.000). E impar: el recargo se suma <b>después</b> de aplicar los descuentos.</td></tr>
+<tr><td class="center">R6</td><td><b>Descuento de cliente</b>: frecuente <b>5 %</b>; VIP <b>15 %</b> (V = 15 %). <b>Cupón ENVIO10</b>: <b>10 %</b>. B impar: si hay ambos, se combinan aplicando primero el del cliente y después el del cupón.</td></tr>
+<tr><td class="center">R7</td><td><b>Cupón que no existe</b> (cualquier valor distinto de ENVIO10) → <b>error</b> (F impar): se lanza <code>ValueError</code>. Sin cupón (None) no pasa nada.</td></tr>
+<tr><td class="center">R8</td><td><b>Costo mínimo</b>: el resultado nunca es menor que <b>$5.000</b>. <b>Redondeo</b>: al múltiplo de $100 más cercano; los $50 redondean <b>hacia arriba</b> (redondeo medio hacia arriba).</td></tr>
+</tbody>
+</table>
+
+<div class="warn"><b>Supuestos que documenté (y asumo como equipo).</b> (1) Un <code>cliente</code> desconocido (por ejemplo, escrito mal) se trata como normal: sin descuento. La especificación no define qué hacer y el enunciado solo exige error para zona y día; no inventé reglas extras. (2) <code>dia</code> acepta decimales solamente si son enteros exactos (p. ej. 2.0), igual que acepta enteros; 2.5 es inválido porque el día es un entero de 1 a 7. (3) El recargo de zona se calcula multiplicativamente sobre la tarifa del tramo (no aditivamente en pesos), igual que en el código heredado. (4) Un peso de exactamente 3 kg pertenece al tramo 2 porque D es impar.</div>
+
+<h2>1.2 Historias de usuario</h2>
+<p>Tres historias cubren R1–R8 entre las tres. Cada criterio de aceptación está en formato <b>Dado / Cuando / Entonces</b> y apunta a la regla que verifica.</p>
+
+<h3>HU-1 — Conocer el costo antes de aceptar el envío</h3>
+<p><b>Como</b> operadora del punto de envíos de Riohacha, <b>quiero</b> calcular el costo de un paquete a partir de su peso, zona, día y cupón, <b>para</b> informárselo al cliente antes de aceptarlo.</p>
+<table>
+<caption>HU-1 · Criterios de aceptación (R1, R3, R4, R8)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>un paquete de 2 kg para zona urbana en un martes</td><td>calculo el costo</td><td>el resultado es $6.000</td><td>R3, tramo 1 (peso &lt; 3)</td></tr>
+<tr><td class="center">CA2</td><td>un paquete de 3 kg para zona urbana</td><td>calculo el costo</td><td>el resultado es $9.000 (tramo 2, porque D impar excluye el límite 3 del tramo 1)</td><td>R3</td></tr>
+<tr><td class="center">CA3</td><td>un paquete de 12 kg para zona urbana</td><td>calculo el costo</td><td>el resultado es $10.600 = 9.000 + 2 × 800</td><td>R3</td></tr>
+<tr><td class="center">CA4</td><td>un paquete de 4 kg para zona rural</td><td>calculo el costo</td><td>el resultado es $11.300 (9.000 × 1,25 = 11.250 redondeado hacia arriba a $100)</td><td>R4, R8</td></tr>
+<tr><td class="center">CA5</td><td>un peso de 0 kg, o de 51 kg</td><td>calculo el costo</td><td>el sistema lanza <code>ValueError</code> con el mensaje «peso invalido»</td><td>R1</td></tr>
+</tbody>
+</table>
+
+<h3>HU-2 — Que aplicaran bien mis descuentos y recargos</h3>
+<p><b>Como</b> cliente frecuente de EnvíaYa, <b>quiero</b> que mis descuentos, los recargos de fin de semana y el cupón ENVIO10 se apliquen con las reglas del sistema, <b>para</b> pagar lo que de verdad me toca.</p>
+<table>
+<caption>HU-2 · Criterios de aceptación (R5, R6, R8)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>cliente VIP, 4 kg, zona urbana, sin cupón</td><td>calculo el costo</td><td>$7.700 (9.000 × 0,85 = 7.650 redondeado a $100 → 7.700)</td><td>R6, R8</td></tr>
+<tr><td class="center">CA2</td><td>cliente VIP, 4 kg, cupón ENVIO10 (B impar: ambos descuentos)</td><td>calculo el costo</td><td>$6.900 (9.000 × 0,85 = 7.650; × 0,90 = 6.885 → 6.900)</td><td>R6</td></tr>
+<tr><td class="center">CA3</td><td>un sábado (día 6), cliente normal, 4 kg</td><td>calculo el costo</td><td>$11.000 (9.000 + 2.000)</td><td>R5</td></tr>
+<tr><td class="center">CA4</td><td>un sábado, cliente VIP (E impar: el finde se suma después de los descuentos)</td><td>calculo el costo</td><td>$9.700 (9.000 × 0,85 = 7.650; + 2.000 = 9.650 → 9.700)</td><td>R5, R8</td></tr>
+<tr><td class="center">CA5</td><td>un costo final de $4.590 (VIP + ENVIO10, 2 kg)</td><td>calculo el costo</td><td>el resultado nunca baja de $5.000 → $5.000</td><td>R8</td></tr>
+</tbody>
+</table>
+
+<h3>HU-3 — Que el sistema rechace las entradas inválidas</h3>
+<p><b>Como</b> supervisora de la calidad del sistema, <b>quiero</b> que el cálculo rechace datos imposibles (pesos fuera de rango, zonas o días inválidos, cupones que no existen), <b>para</b> no cobrar a ciegas ni guardar basura en los envíos.</p>
+<table>
+<caption>HU-3 · Criterios de aceptación (R1, R2, R7)</caption>
+<thead><tr><th>#</th><th>Dado</th><th>Cuando</th><th>Entonces</th><th>Regla</th></tr></thead>
+<tbody>
+<tr><td class="center">CA1</td><td>un día con valor 0, u 8, o 2.5</td><td>calculo el costo</td><td>se lanza <code>ValueError("dia invalido")</code></td><td>R2</td></tr>
+<tr><td class="center">CA2</td><td>una zona «insular»</td><td>calculo el costo</td><td>se lanza <code>ValueError("zona invalida")</code> (solo urbana, rural y nacional son válidas)</td><td>R2</td></tr>
+<tr><td class="center">CA3</td><td>el cupón «VERANO20»</td><td>calculo el costo</td><td>se lanza <code>ValueError("cupon no existe")</code> (F impar)</td><td>R7</td></tr>
+<tr><td class="center">CA4</td><td>un peso de 51 kg</td><td>calculo el costo</td><td>se lanza <code>ValueError("peso invalido")</code></td><td>R1</td></tr>
+<tr><td class="center">CA5</td><td>un peso de 2 kg y cliente normal</td><td>calculo el costo</td><td>no lanza ningún error: el cupón es opcional y omitirlo es válido</td><td>R7</td></tr>
+</tbody>
+</table>
+
+<h2>1.3 Matriz de trazabilidad</h2>
+<p>Requisito → historia → casos de prueba. La columna «Casos» apunta a la matriz de la Parte 3 (IDs CA-01 a CA-32); la fuente de verdad de cada caso es la especificación de la tabla 1.1.</p>
+<table>
+<caption>Tabla 1.2 — Trazabilidad requisito ↔ historia ↔ casos de prueba</caption>
+<thead><tr><th>Requisito</th><th>Historias</th><th>Casos de prueba</th></tr></thead>
+<tbody>
+<tr><td>R1 · Peso válido</td><td>HU-1, HU-3</td><td>CA-24, CA-25, CA-26</td></tr>
+<tr><td>R2 · Zona y día válidos</td><td>HU-3</td><td>CA-27, CA-28, CA-29</td></tr>
+<tr><td>R3 · Tarifas por tramo</td><td>HU-1</td><td>CA-01 … CA-08</td></tr>
+<tr><td>R4 · Recargo por zona</td><td>HU-1, HU-2</td><td>CA-09, CA-10, CA-11, CA-21, CA-31</td></tr>
+<tr><td>R5 · Fin de semana</td><td>HU-2</td><td>CA-12, CA-13, CA-19, CA-20, CA-21, CA-22, CA-32</td></tr>
+<tr><td>R6 · Descuentos (B impar)</td><td>HU-2</td><td>CA-14, CA-15, CA-16, CA-17, CA-18, CA-20, CA-21, CA-31</td></tr>
+<tr><td>R7 · Cupón no existe → error (F impar)</td><td>HU-3</td><td>CA-30</td></tr>
+<tr><td>R8 · Costo mínimo y redondeo</td><td>HU-2</td><td>CA-09, CA-11, CA-14, CA-15, CA-23</td></tr>
+</tbody>
+</table>
+
+<!-- ============================== 2. PLAN DE PRUEBAS ============================== -->
+<h1 id="sec2">2. Plan de pruebas <span class="small">· Parte 2 (0,5 pts)</span></h1>
+<p>Este es el plan que seguí para probar el calculador. No es un documento decorativo: los niveles, la estrategia y los criterios se aplicaron de verdad durante el trabajo, y la evidencia está en la Parte 5 y en las capturas de pantalla.</p>
+
+<h2>2.1 Alcance</h2>
+<p><b>Dentro:</b> la función de cálculo del costo (validación de entradas, tramos, recargos por zona, descuentos, recargo de fin de semana, mínimo y redondeo), su comportamiento observable desde Python, la batería de pruebas automatizadas, la ejecución contra el código heredado y contra las versiones corregidas, y la evidencia de cobertura. <b>Fuera:</b> la interfaz de usuario (el sistema es un módulo sin GUI ni API HTTP), una base de datos, despliegues en producción y pruebas de carga o concurrencia.</p>
+
+<h2>2.2 Niveles de prueba aplicados al caso</h2>
+<table>
+<caption>Tabla 2.1 — Los cuatro niveles de prueba, aplicados a EnvíaYa</caption>
+<thead><tr><th>Nivel</th><th>Cómo se aplica a este caso</th><th>Artefacto</th></tr></thead>
+<tbody>
+<tr><td><b>Unidad</b></td><td>Cada función extraída en la refactorización se ejercita por separado: <code>validar_peso</code>, <code>validar_zona</code>, <code>validar_dia</code>, <code>tarifa_por_peso</code>, <code>aplicar_recargo_zona</code> (una estrategia por zona), <code>aplicar_descuentos</code>, <code>aplicar_fin_de_semana</code>, <code>redondear_100</code>. Se mide con los casos de la Parte 3.</td><td><code>tests/test_envios.py</code></td></tr>
+<tr><td><b>Integración</b></td><td>El flujo completo <code>calcular_costo</code> integra todos los componentes: validación → tarifa → zona → descuentos → fin de semana → mínimo → redondeo. Las interacciones (p. ej., descuento antes que fin de semana, cupón después del cliente) se prueban de extremo a extremo dentro del módulo.</td><td>Casos CA-19 a CA-22, CA-31, CA-32</td></tr>
+<tr><td><b>Sistema</b></td><td>El módulo se usa como sistema completo desde un cliente Python: <code>import envios; envios.calc(...)</code>. Se verificó el comportamiento del sistema heredado tal como lo encontré, y luego el de v2.0.0 y v2.1.0.</td><td>Ejecuciones en este documento</td></tr>
+<tr><td><b>Aceptación</b></td><td>Los criterios de aceptación de las historias HU-1 a HU-3 se traducen uno a uno en casos ejecutables; si todos están en verde, el sistema satisface las historias que le venden al negocio.</td><td>Tabla 1.1 ↔ matriz Parte 3</td></tr>
+</tbody>
+</table>
+
+<h2>2.3 Estrategia, ambiente y roles</h2>
+<p><b>Estrategia.</b> Combinación de dos enfoques: <b>caja negra</b> sobre la especificación (particiones, valores límite, tabla de decisión; técnica independiente de la implementación) y <b>caja blanca</b> sobre el código (grafo de flujo, complejidad ciclomática, caminos independientes y cobertura de sentencias y ramas con <code>pytest-cov --cov-branch</code>). Los casos de caja negra fallaron contra heredado 18 veces; los caminos de caja blanca guían qué falta cubrir. Para la solicitud de cambio (Parte 8) apliqué TDD: la prueba primero, la vi fallar, y luego implementé hasta el verde. Siempre regresión completa antes de etiquetar una versión.</p>
+<p><b>Ambiente.</b> Windows 11, Python 3.14.7, pytest 9.2.0, pytest-cov 7.1.0, Git 2.55.0.windows.5. Sin base de datos ni servicios externos; todo corre en local sobre el repositorio. <b>Roles.</b> Yo (Alex Valdelamar Bustamante) actué como equipo de calidad y mantenimiento: analista (especificación y casos), automatizador (suite pytest), corrector (6 defectos), refactorizador (patrón Estrategia), gestor de configuración (ramas, merges y tags) y dueño del informe. El docente actúa como dueño del producto y aprueba en la sustentación.</p>
+
+<h2>2.4 Riesgos y mitigación</h2>
+<table>
+<caption>Tabla 2.2 — Riesgos del esfuerzo de pruebas y su mitigación</caption>
+<thead><tr><th>#</th><th>Riesgo</th><th>Probabilidad / Impacto</th><th>Mitigación</th></tr></thead>
+<tbody>
+<tr><td>R-01</td><td><b>Ambigüedad en el redondeo</b> («$50 redondean hacia arriba» no era explícito en el heredado: truncaba).</td><td>Alta / Media</td><td>Regla explícita en R8 y casos dedicados al filo de los $50 (CA-09: 11.250 → 11.300; CA-11: 13.250 → 13.300).</td></tr>
+<tr><td>R-02</td><td><b>Orden de aplicación fin de semana vs. descuentos</b> (E impar invierte el orden lógico del heredado).</td><td>Alta / Alta</td><td>R5 documenta E impar; CA-19 a CA-22 y CA-32 fijan el orden; el defecto quedó registrado como DEF-03.</td></tr>
+<tr><td>R-03</td><td><b>Frontera del tramo 1</b> (D impar: el límite 3 no pertenece al tramo 1).</td><td>Alta / Media</td><td>Valores límite dedicados (CA-03: 2.99 → 6.000; CA-04: 3 → 9.000); DEF-01.</td></tr>
+<tr><td>R-04</td><td><b>Cupón inexistente</b> silenciosamente ignorado (F impar exige error).</td><td>Media / Media</td><td>Prueba CA-30 con <code>pytest.raises(ValueError)</code>; DEF-04.</td></tr>
+<tr><td>R-05</td><td><b>Regresión por la refactorización</b> (quitar <code>flag</code>, extraer funciones, Estrategia).</td><td>Media / Alta</td><td>La misma suite (32 casos) valida el módulo antes y después; después del refactor se agregaron las 8 pruebas del empresarial y la cobertura quedó en 100 %.</td></tr>
+<tr><td>R-06</td><td><b>Falsos positivos por entorno</b> (versión de Python/pytest distinta en la máquina del docente).</td><td>Baja / Media</td><td>Versiones exactas documentadas aquí; los comandos usados son los mismos en cualquier entorno con pytest instalado.</td></tr>
+</tbody>
+</table>
+
+<h2>2.5 Criterios de entrada y de salida</h2>
+<p><b>Entrada.</b> (1) Código heredado importado y etiquetado v1.0.0; (2) <code>CONFIG</code> con mis valores; (3) especificación R1–R8 escrita y revisada contra los parámetros; (4) suite de 32 casos escrita y trazable; (5) ambiente con pytest y pytest-cov funcionando. <b>Salida.</b> (1) 100 % de las pruebas en verde (logrado: 40/40); (2) cobertura de sentencias y ramas ≥ 95 % (logrado: 100 %); (3) cero defectos de severidad mayor abiertos (los 6 defectos quedaron cerrados, ver DEF-01 a DEF-06); (4) documentación de configuración (tags, ramas, CHANGELOG) y evidencia de regresión en el repositorio; (5) informe con las evidencias (capturas) adjunto.</p>

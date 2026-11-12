@@ -1,0 +1,74 @@
+
+<!-- ============================== RESUMEN ============================== -->
+<h1 id="resumen" style="border-bottom: none;">Resumen ejecutivo</h1>
+<p>EnvíaYa es una empresa de envíos de Riohacha cuyo sistema calcula el costo de cada envío con una función que dejó escrita un desarrollador que ya no trabaja allí. El código llegó a mis manos tal como estaba: funcionaba «a medias», tenía defectos frente a la especificación propia que me correspondió (código estudiantil 0182410133), malas prácticas y deuda técnica. En este informe documento el trabajo completo que hice para ponerlo en orden, siguiendo las ocho partes del enunciado del parcial: la especificación y las historias de usuario, el plan de pruebas, el diseño de casos de caja negra y de caja blanca, la automatización con pytest y el reporte de defectos, las correcciones y la refactorización con patrón Estrategia, la gestión de configuración con Git y la solicitud de cambio que me asignó la fórmula <code>(A + F) mod 3 = 1</code> (nuevo cliente empresarial).</p>
+<p>Encontré 6 defectos funcionales respecto a mi especificación. Los más costosos para la empresa: el recargo de fin de semana solo aplicaba el domingo, no se cobraba nada de fin de semana con el cliente correcto en sábado, el límite del tramo 1 estaba incluido aunque mi dígito D exige excluirlo, y el resultado se redondeaba truncando en vez de redondear al múltiplo de $100 más cercano. Las 32 pruebas que escribí fallaron 18 veces contra el código heredado y pasaron las 32 después de las correcciones; la cobertura pasó de 96 % a 100 % (sentencias y ramas). El sistema se versionó como <b>v1.0.0</b> (heredado), <b>v2.0.0</b> (correcciones + refactorización mayor por la eliminación del parámetro <code>flag</code>) y <b>v2.1.0</b> (nuevo cliente empresarial, cambio menor y compatible).</p>
+
+<div class="kpiRow">
+  <div class="kpiCard"><span class="n">6</span><span class="l">defectos hallados y corregidos</span></div>
+  <div class="kpiCard"><span class="n">32 → 40</span><span class="l">casos de prueba (8 nuevos en la Parte 8)</span></div>
+  <div class="kpiCard"><span class="n">96 → 100 %</span><span class="l">cobertura de sentencias y de ramas</span></div>
+  <div class="kpiCard"><span class="n">3</span><span class="l">versiones publicadas (1.0.0, 2.0.0, 2.1.0)</span></div>
+</div>
+
+<div class="callout"><b>Nota sobre el alcance.</b> Trabajé en Python porque el código heredado está en Python. Todas las pruebas automatizadas se ejecutaron de verdad sobre el repositorio, y las capturas de pantalla que aparecen a lo largo del documento son renders de la salida real de los comandos (pytest, coverage, git), no montajes. Al final del informe queda el código fuente completo de la versión entregada.</div>
+
+<!-- ============================== ÍNDICE ============================== -->
+<h1 id="indice" style="border-bottom: none;">Índice</h1>
+<nav class="toc">
+<ol>
+  <li><a href="#misparametros"><span class="t">Mis parámetros (código 0182410133)</span><span class="dots"></span><span class="pg" data-ref="misparametros">1</span></a></li>
+  <li><a href="#sec1"><span class="t">1. Requisitos y criterios de aceptación</span><span class="dots"></span><span class="pg" data-ref="sec1">2</span></a></li>
+  <li><a href="#sec2"><span class="t">2. Plan de pruebas</span><span class="dots"></span><span class="pg" data-ref="sec2">3</span></a></li>
+  <li><a href="#sec3"><span class="t">3. Diseño de casos de caja negra</span><span class="dots"></span><span class="pg" data-ref="sec3">4</span></a></li>
+  <li><a href="#sec4"><span class="t">4. Caja blanca</span><span class="dots"></span><span class="pg" data-ref="sec4">5</span></a></li>
+  <li><a href="#sec5"><span class="t">5. Automatización, ejecución y defectos</span><span class="dots"></span><span class="pg" data-ref="sec5">6</span></a></li>
+  <li><a href="#sec6"><span class="t">6. Mantenimiento y refactorización</span><span class="dots"></span><span class="pg" data-ref="sec6">7</span></a></li>
+  <li><a href="#sec7"><span class="t">7. Gestión de configuración</span><span class="dots"></span><span class="pg" data-ref="sec7">8</span></a></li>
+  <li><a href="#sec8"><span class="t">8. Solicitud de cambio y análisis de impacto</span><span class="dots"></span><span class="pg" data-ref="sec8">9</span></a></li>
+  <li><a href="#conclusiones"><span class="t">Conclusiones</span><span class="dots"></span><span class="pg" data-ref="conclusiones">10</span></a></li>
+  <li><a href="#referencias"><span class="t">Referencias</span><span class="dots"></span><span class="pg" data-ref="referencias">11</span></a></li>
+  <li><a href="#anexoA"><span class="t">Anexo A — Código fuente final (envios.py v2.1.0)</span><span class="dots"></span><span class="pg" data-ref="anexoA">12</span></a></li>
+  <li><a href="#anexoB"><span class="t">Anexo B — CHANGELOG.md completo</span><span class="dots"></span><span class="pg" data-ref="anexoB">13</span></a></li>
+</ol>
+</nav>
+
+<!-- ============================== MIS PARÁMETROS ============================== -->
+<h1 id="misparametros">Mis parámetros (código 0182410133)</h1>
+<p>Tomé los 6 últimos dígitos de mi código estudiantil <b>0182410133</b> y los llamé A, B, C, D, E y F. Con ellos calculé mis parámetros personalizados y, como pedía el enunciado, los dejé llenos también en el encabezado del <code>envios.py</code> original. Los valores y las reglas de paridad que dependen de ellos son la base de toda mi especificación y de las pruebas: si estos números están mal, todo lo demás está mal.</p>
+
+<table>
+<caption>Tabla de parámetros propios — código 0182410133</caption>
+<thead><tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>PMAX</th><th>L1</th><th>L2</th><th>RR</th><th>RN</th><th>V</th><th>S</th><th>CAMBIO</th></tr></thead>
+<tbody>
+<tr class="center"><td>4</td><td>1</td><td>0</td><td>1</td><td>3</td><td>3</td><td>50</td><td>3</td><td>10</td><td>25&nbsp;%</td><td>40&nbsp;%</td><td>15&nbsp;%</td><td>$2.000</td><td>1</td></tr>
+</tbody>
+</table>
+
+<table>
+<caption>Cómo se calculó cada parámetro</caption>
+<thead><tr><th>Parámetro</th><th>Fórmula</th><th>Cálculo</th><th>Valor</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>PMAX</td><td>30 + 5·A</td><td>30 + 5·4</td><td class="kpi">50 kg</td><td>Peso máximo permitido por envío</td></tr>
+<tr><td>L1</td><td>2 + (B mod 3)</td><td>2 + (1 mod 3)</td><td class="kpi">3 kg</td><td>Límite del tramo 1</td></tr>
+<tr><td>L2</td><td>10 + C</td><td>10 + 0</td><td class="kpi">10 kg</td><td>Límite del tramo 2 (incluido)</td></tr>
+<tr><td>RR</td><td>10 + 5·(E mod 4)</td><td>10 + 5·(3 mod 4)</td><td class="kpi">25 %</td><td>Recargo por zona rural</td></tr>
+<tr><td>RN</td><td>40 + 5·(F mod 3)</td><td>40 + 5·(3 mod 3)</td><td class="kpi">40 %</td><td>Recargo por zona nacional</td></tr>
+<tr><td>V</td><td>10 + 5·(A mod 3)</td><td>10 + 5·(4 mod 3)</td><td class="kpi">15 %</td><td>Descuento de cliente VIP</td></tr>
+<tr><td>S</td><td>2000 + 500·(C mod 4)</td><td>2000 + 500·(0 mod 4)</td><td class="kpi">$2.000</td><td>Recargo de fin de semana</td></tr>
+<tr><td>CAMBIO</td><td>(A + F) mod 3</td><td>(4 + 3) mod 3</td><td class="kpi">1</td><td>Solicitud de cambio asignada (Parte 8): cliente empresarial</td></tr>
+</tbody>
+</table>
+
+<table>
+<caption>Reglas que cambian según la paridad de mis dígitos</caption>
+<thead><tr><th>Dígito</th><th>Valor</th><th>¿Par o impar?</th><th>Regla que me toca</th></tr></thead>
+<tbody>
+<tr><td>D (tramo 1)</td><td>1</td><td>Impar</td><td>El tramo 1 <b>no incluye</b> el límite: <code>peso &lt; 3 kg</code>. Con peso exactamente 3 kg se cotiza el tramo 2 ($9.000).</td></tr>
+<tr><td>E (recargo fin de semana)</td><td>3</td><td>Impar</td><td>El recargo de fin de semana (+$2.000) se suma <b>después</b> de aplicar los descuentos.</td></tr>
+<tr><td>B (cliente y cupón)</td><td>1</td><td>Impar</td><td>Se aplican ambos: primero el descuento del cliente y luego el del cupón.</td></tr>
+<tr><td>F (cupón que no existe)</td><td>3</td><td>Impar</td><td>Un cupón que no existe es un <b>error</b>: se lanza <code>ValueError</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="callout"><b>Por qué esto importa tanto.</b> El enunciado es claro: si la especificación, los resultados esperados o el <code>CONFIG</code> no corresponden a mi código estudiantil, la nota es 0. Por eso antes de tocar el código heredado dejé escrito <code>CONFIG</code> con mis valores (L1=3, L2=10, RR=0,25, RN=0,40, V=0,15, RECARGO_FINDE=2000) y verifiqué el ejemplo del enunciado con mis propios números. Todo lo que sigue asume este cuadro como fuente de verdad.</div>

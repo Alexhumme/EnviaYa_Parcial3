@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Informe Parcial 3 — EnvíaYa · Calidad y mantenimiento del calculador de envíos</title>
+<style>
+@page {
+  size: letter;
+  margin: 0.72in 0.82in 0.72in 0.72in;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "Times New Roman", serif;
+  font-size: 10pt;
+  color: #1a2b3c;
+  line-height: 1.32;
+  margin: 0 0 0 0.34in;
+}
+code, pre, .mono { font-family: Consolas, "Courier New", monospace; }
+pre {
+  background: #f4f6f8;
+  border: 1px solid #dde3ea;
+  border-left: 3.5px solid #17324d;
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 7.7pt;
+  line-height: 1.28;
+  white-space: pre-wrap;
+}
+code { background: #eef1f5; padding: 0 4px; border-radius: 3px; font-size: 9pt; }
+h1 {
+  font-size: 17pt; color: #17324d;
+  margin: 22px 0 10px 0;
+  padding-bottom: 4px;
+  border-bottom: 1.6px solid #236b65;
+  page-break-after: avoid;
+  letter-spacing: 0.1px;
+}
+h2 { font-size: 12pt; color: #236b65; margin: 16px 0 7px 0; page-break-after: avoid; }
+h3 { font-size: 10.5pt; color: #36566f; margin: 12px 0 6px 0; page-break-after: avoid; }
+p { margin: 6px 0; text-align: justify; }
+ul, ol { margin: 6px 0 8px 18px; }
+li { margin: 3px 0; text-align: justify; }
+.small { font-size: 8.5pt; color: #4a5a6a; }
+.kpi { color: #17324d; font-weight: bold; }
+table { width: 100%; border-collapse: collapse; font-size: 8.7pt; margin: 10px 0; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; break-inside: avoid; }
+caption { caption-side: top; text-align: left; font-weight: bold; color: #4f81bd; font-size: 8pt; margin-bottom: 4px; }
+th {
+  background: #17324d; color: #fff; font-size: 8.5pt;
+  padding: 5px 6px; text-align: left; border: 1px solid #10243a;
+}
+td { border: 1px solid #c9d3e0; padding: 5px 6px; vertical-align: top; }
+tbody tr:nth-child(even) { background: #f8fafc; }
+tr.total td { background: #eaf0f8 !important; font-weight: bold; }
+td.center { text-align: center; }
+.tag { display:inline-block; padding:1px 7px; border-radius:9px; font-size:7.5pt; font-weight:bold; }
+.tag-ok { background:#e2f3e7; color:#1e6f5c; border:1px solid #bfe3cd; }
+.tag-err { background:#fde9e9; color:#b91c1c; border:1px solid #f3c1c1; }
+.tag-warn { background:#fff3cd; color:#8a6d1a; border:1px solid #ecd98c; }
+.tag-info { background:#e8f0fe; color:#1a3a5f; border:1px solid #c3d7f5; }
+.callout {
+  background: #eef4fb; border-left: 4px solid #236b65;
+  padding: 8px 12px; margin: 10px 0; font-size: 9.5pt;
+  page-break-inside: avoid;
+}
+.warn { background: #fdf6e7; border-left: 4px solid #b8860b; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+.figure { text-align: center; margin: 12px 0; page-break-inside: avoid; }
+.figure img { max-width: 100%; }
+.caption { text-align: center; font-weight: bold; color: #4f81bd; font-size: 8pt; margin-top: 2px; }
+.kpiRow { display: flex; gap: 10px; margin: 10px 0; }
+.kpiCard {
+  flex: 1; background: #f4f8fc; border: 1px solid #d5e0ec; border-top: 3px solid #236b65;
+  border-radius: 4px; padding: 8px 10px; text-align: center; page-break-inside: avoid;
+}
+.kpiCard .n { font-size: 15pt; font-weight: bold; color: #17324d; display:block; white-space: nowrap; }
+.kpiCard .l { font-size: 7.6pt; color: #4a5a6a; }
+/* ---------- portada ---------- */
+.cover { text-align: center; padding-top: 6px; page-break-after: always; }
+.cover .uni { font-size: 16pt; font-weight: bold; color: #17324d; letter-spacing: 0.5px; margin-top: 18px; }
+.cover .prog { font-size: 12pt; color: #36566f; margin-bottom: 34px; }
+.cover .tipo { font-size: 15pt; font-weight: bold; color: #236b65; letter-spacing: 4px; margin: 22px 0 8px 0; }
+.cover h1.title {
+  font-size: 25pt; border: none; margin: 10px 40px 4px 40px; padding: 0;
+  line-height: 1.28; color: #17324d;
+}
+.cover .subtitle { font-size: 11pt; color: #36566f; margin: 4px 60px 0 60px; font-style: italic; }
+.cover .block { margin-top: 26px; font-size: 11pt; }
+.cover .block b { color: #17324d; }
+.cover .meta { margin-top: 20px; font-size: 10pt; color: #36566f; }
+.cover .code { font-size: 10pt; color: #36566f; margin-top: 4px; }
+.hr { border: none; border-top: 1px solid #c9d3e0; margin: 14px auto; width: 60%; }
+/* ---------- indice ---------- */
+.toc { font-size: 9.6pt; }
+.toc ol { list-style: none; margin: 8px 0 0 0; padding: 0; }
+.toc li { margin: 2.5px 0; display: flex; align-items: baseline; }
+.toc a { text-decoration: none; color: #17324d; display: flex; width: 100%; align-items: baseline; }
+.toc .t { padding-right: 6px; }
+.toc .dots { flex: 1; border-bottom: 1.2px dotted #9db2c9; transform: translateY(-3px); }
+.toc .pg { padding-left: 6px; color: #17324d; font-weight: bold; }
+.toc .lvl2 { padding-left: 18px; font-size: 9pt; }
+.pagenum { font-variant-numeric: tabular-nums; }
+.strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0.27in;
+  height: 100%;
+  background-image: url("assets/image2.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+/* tablas de casos: tipografia compacta */
+.matrix td { font-size: 7.9pt; padding: 3px 5px; }
+.matrix th { font-size: 8pt; }
+.defects td { font-size: 7.8pt; padding: 4px 5px; }
+</style>
+</head>
+<body>
+<div class="strip"></div>
+
+<!-- ============================== PORTADA ============================== -->
+<section class="cover">
+  <div class="uni">UNIVERSIDAD DE LA GUAJIRA</div>
+  <div class="prog">PROGRAMA DE INGENIERÍA DE SISTEMAS</div>
+  <div class="tipo">INFORME</div>
+  <h1 class="title">Calidad y mantenimiento del calculador de envíos de EnvíaYa</h1>
+  <div class="subtitle">Requisitos, pruebas de caja negra y caja blanca, corrección de defectos, refactorización con patrón Estrategia, gestión de configuración y evolución del sistema de costos de EnvíaYa</div>
+
+  <div class="block">
+    <b>Autor</b><br>
+    Alex Valdelamar Bustamante
+    <div class="code">Código estudiantil: 0182410133</div>
+  </div>
+
+  <div class="block" style="margin-top: 26px; font-size: 10pt;">
+    Asignatura: <b>Ingeniería de Software I</b> (273365)<br>
+    Grupo · Semestre: <b>B1 · VI semestre</b><br>
+    Profesor: <b>Ing. Robert Damián Quintero Laverde</b><br>
+    Periodo: <b>2026-2 · Tercer corte</b>
+  </div>
+
+  <div class="hr"></div>
+  <div class="meta">Riohacha, La Guajira<br>2026</div>
+</section>

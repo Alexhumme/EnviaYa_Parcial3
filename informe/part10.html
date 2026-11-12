@@ -1,0 +1,41 @@
+
+<!-- ============================== CONCLUSIONES ============================== -->
+<h1 id="conclusiones">Conclusiones</h1>
+<p>Trabajar sobre código heredado de verdad cambia la manera de pensar: uno empieza creyendo que «ya eso funciona, solo hace falta pulirlo», y termina descubriendo que el software puede cobrar mal cada fin de semana y que nadie lo haya notado porque no había una sola prueba. Lo que me llevo del parcial:</p>
+<ul>
+<li><b>La especificación primero, siempre.</b> Con mis números encima (PMAX 50, L1 3, RR 25 %…), cada caso de prueba se volvió mecánico: entradas, regla y cuenta. La ambigüedad desaparece cuando uno se obliga a escribir R1–R8 con valores antes de tocar nada, y la matriz de trazabilidad obligó a que ningún requisito quedara sin prueba ni ninguna prueba sin requisito.</li>
+<li><b>El heredado tenía defectos concretos, no «estilo».</b> Los seis que encontré se ven en una corrida: 18 casos en rojo. Y todos eran sistemáticos: cada sábado mal cobrado, cada rural con el peso exacto, cada truncado de redondeo. Eso es exactamente el tipo de error que una suite automatizada caza en segundos y que en producción vive años.</li>
+<li><b>El redondeo «obvio» no lo es.</b> <code>int(t / 100) * 100</code> redondea hacia abajo con cara de redondeo. Solo mirando la regla del enunciado línea por línea («los $50 redondean hacia arriba») salió DEF-06, y sus casos bordes (11.250, 8.550, 7.650) pasaron de error a prueba verde.</li>
+<li><b>La refactorización devolvió la confianza.</b> Extraer <code>validar_*</code>, constantes con nombre, quitar <code>flag</code> y dejar el <code>EstrategiaZona</code> hace que mañana cambiar cualquier regla sea local. La métrica concreta: complejidad de la función principal de 15 a 2, cobertura de 96 % a 100 %, y ninguna prueba aflojó un assert para pasar al verde.</li>
+<li><b>Git como memoria, no como adorno.</b> Las ramas <code>fix/DEF-XX</code>, los merges <code>--no-ff</code> y los tags v1.0.0/v2.0.0/v2.1.0 cuentan la historia del trabajo como la pedía el enunciado. Y sí: quitar <code>flag</code> forzó una versión mayor.</li>
+</ul>
+<p>Queda pendiente para una próxima iteración: publicar el repositorio en un remoto real (la entrega se hace con el .zip que incluye <code>.git</code> porque es el canal que pidió la asignatura), integrar CI que corra la suite en cada push, y ampliar la prueba de mutación para medir qué tan buena es la suite más allá de la cobertura. Y honestamente: con más tiempo habría hecho también una corrida contra Python 3.11 y 3.13 para confirmar que el comportamiento de redondeo no cambia con la versión del intérprete (aquí no cambia, pero verificarlo toma minutos).</p>
+
+<!-- ============================== REFERENCIAS ============================== -->
+<h1 id="referencias">Referencias</h1>
+<ol>
+<li>Universidad de La Guajira · Facultad de Ingenierías · Ingeniería de Sistemas. <i>Parcial 3 · Ingeniería de Software I (273365)</i>. Grupo B1 · VI semestre · Tercer corte 2026-2. Ing. Robert Damián Quintero Laverde. Miércoles 11 de noviembre de 2026.</li>
+<li>International Organization for Standardization. <i>ISO/IEC/IEEE 14764 — Software engineering — Software life cycle processes — Maintenance</i>.</li>
+<li>Semantic Versioning 2.0.0. <code>https://semver.org/lang/es/</code></li>
+<li>Keep a Changelog 1.1.0. <code>https://keepachangelog.com/es-ES/1.1.0/</code></li>
+<li>pytest — documentación oficial. <code>https://docs.pytest.org/</code></li>
+<li>pytest-cov. <code>https://pytest-cov.readthedocs.io/</code></li>
+<li>Python Software Foundation. <code>decimal</code> — Decimal fixed-point and floating-point arithmetic. <code>https://docs.python.org/3/library/decimal.html</code></li>
+<li>Git — documentación (branch, merge --no-ff, tag -a, log --oneline --graph). <code>https://git-scm.com/doc</code></li>
+<li>McCabe, Thomas J. <i>A Complexity Measure</i>. IEEE Transactions on Software Engineering, SE-2(4), 1976.</li>
+<li>Gamma, Erich; Helm, Richard; Johnson, Ralph; Vlissides, John. <i>Design Patterns: Elements of Reusable Object-Oriented Software</i>. Addison-Wesley, 1994. (Patrón Strategy)</li>
+<li>Fowler, Martin. <i>Refactoring: Improving the Design of Existing Code</i> (2.ª ed.). Addison-Wesley, 2018. (Code smells: long method, large class, magic numbers, flag argument)</li>
+</ol>
+<p class="small">Los datos de mi código estudiantil, las cifras del informe y el código fuente adjunto fueron producidos y verificados durante la sesión de trabajo; las capturas corresponden a esas ejecuciones reales.</p>
+
+<!-- ============================== ANEXOS ============================== -->
+<h1 id="anexoA">Anexo A — Código fuente final <span class="small">· envios.py v2.1.0</span></h1>
+<p>Versión entregada al cierre del trabajo (la misma que contiene la etiqueta <code>v2.1.0</code> y que pasa la regresión completa):</p>
+<pre>@@ANEXO_A@@</pre>
+
+<h1 id="anexoB">Anexo B — CHANGELOG.md completo</h1>
+<p>Historial completo según Keep a Changelog, tal como vive en la raíz del repositorio:</p>
+<pre>@@ANEXO_B@@</pre>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+
+<!-- ============================== 4. CAJA BLANCA ============================== -->
+<h1 id="sec4">4. Caja blanca <span class="small">· Parte 4 (0,6 pts)</span></h1>
+<p>Aquí analicé el código por dentro: grafo de flujo, complejidad ciclomática, caminos independientes y cobertura. Trabajé sobre la versión heredada (v1.0.0), que es la que corresponde a esta parte del enunciado; las líneas citadas son las de <code>envios.py</code> original.</p>
+
+<h2>4.1 Grafo de flujo de <code>calc</code></h2>
+<p>El grafo tiene <b>30 nodos</b> y <b>43 aristas</b>. Los nodos predicado (d1–d14) son rombos amarillos; las acciones, rectángulos azules; inicio/fin, verdes; la excepción, roja. Para que quepa legible lo dividí en tres figuras. La leyenda va debajo.</p>
+
+<div class="figure"><img src="assets/grafo_a.png" alt="Grafo de flujo parte A" style="width: 58%;"><div class="caption">Figura 4.1a — Nodos 1–10: inicio, validación de peso y tramos.</div></div>
+<div class="figure"><img src="assets/grafo_b.png" alt="Grafo de flujo parte B" style="width: 62%;"><div class="caption">Figura 4.1b — Nodos 10–18: zonas y recargo de fin de semana.</div></div>
+<div class="figure"><img src="assets/grafo_c.png" alt="Grafo de flujo parte C" style="width: 72%;"><div class="caption">Figura 4.1c — Nodos 20–30: descuentos, mínimo, flag y retorno.</div></div>
+
+<table>
+<caption>Tabla 4.1 — Leyenda del grafo de flujo (líneas del v1.0.0)</caption>
+<thead><tr><th>Nº</th><th>Línea v1.0.0</th><th>Nodo</th><th>Nº</th><th>Línea v1.0.0</th><th>Nodo</th></tr></thead>
+<tbody>
+<tr><td class="center">1</td><td>—</td><td>inicio</td><td class="center">16</td><td>52</td><td>d8 · ¿d &gt; 6? (finde)</td></tr>
+<tr><td class="center">2</td><td>37 (<code>p ≤ 0</code>)</td><td>d1 · predicado</td><td class="center">17</td><td>53</td><td>t = t + S</td></tr>
+<tr><td class="center">3</td><td>37 (<code>p &gt; 50</code>)</td><td>d2 · predicado</td><td class="center">18</td><td>54</td><td>d9 · ¿c == «frecuente»?</td></tr>
+<tr><td class="center">4</td><td>38</td><td>raise ValueError</td><td class="center">19</td><td>55</td><td>t = t − 5 %</td></tr>
+<tr><td class="center">5</td><td>39 (<code>p &lt;= L1</code>)</td><td>d3 · predicado</td><td class="center">20</td><td>56</td><td>d10 · ¿c == «vip»?</td></tr>
+<tr><td class="center">6</td><td>40</td><td>t = 6000</td><td class="center">21</td><td>57</td><td>t = t − V</td></tr>
+<tr><td class="center">7</td><td>41 (<code>p &lt;= L2</code>)</td><td>d4 · predicado</td><td class="center">22</td><td>58 (<code>cup != None</code>)</td><td>d11 · predicado</td></tr>
+<tr><td class="center">8</td><td>42</td><td>t = 9000</td><td class="center">23</td><td>59 (<code>cup == ENVIO10</code>)</td><td>d12 · predicado</td></tr>
+<tr><td class="center">9</td><td>44</td><td>t = 9000 + (p−L2)·800</td><td class="center">24</td><td>60</td><td>t = t − 10 %</td></tr>
+<tr><td class="center">10</td><td>45</td><td>d5 · ¿z == urbana?</td><td class="center">25</td><td>61 (<code>t &lt; 5000</code>)</td><td>d13 · predicado</td></tr>
+<tr><td class="center">11</td><td>46</td><td>t = t (sin efecto)</td><td class="center">26</td><td>62</td><td>t = 5000</td></tr>
+<tr><td class="center">12</td><td>47</td><td>d6 · ¿z == rural?</td><td class="center">27</td><td>63 (<code>flag</code>)</td><td>d14 · predicado</td></tr>
+<tr><td class="center">13</td><td>48</td><td>t = t + t·RR</td><td class="center">28</td><td>64</td><td>print("costo:", t)</td></tr>
+<tr><td class="center">14</td><td>49</td><td>d7 · ¿z == nacional?</td><td class="center">29</td><td>65</td><td>return int(t/100)·100</td></tr>
+<tr><td class="center">15</td><td>50</td><td>t = t + t·RN</td><td class="center">30</td><td>—</td><td>fin</td></tr>
+</tbody>
+</table>
+<p class="small">Flechas entrantes a «raise»: desde d1 (sí) y d2 (sí). Si la excepción salta, el flujo termina en el nodo 30 (fin) sin pasar por el cálculo: el grafo distingue «fin normal» de «fin por excepción» con el mismo nodo terminal. El camino «zona desconocida» (d7 → no, ni urbana ni rural ni nacional) sigue directo al nodo 16 sin aplicar recargo: ese es exactamente el agujero que reporta DEF-05.</p>
+
+<h2>4.2 Complejidad ciclomática — tres formas</h2>
+<table>
+<caption>Tabla 4.2 — Tres maneras de calcular V(G) del código heredado (dan lo mismo)</caption>
+<thead><tr><th>Método</th><th>Fórmula</th><th>Cálculo</th><th>V(G)</th></tr></thead>
+<tbody>
+<tr><td>1. Aristas y nodos</td><td>V(G) = E − N + 2P</td><td>43 − 30 + 2·1</td><td class="center kpi">15</td></tr>
+<tr><td>2. Nodos predicado</td><td>V(G) = P + 1</td><td>14 predicados (d1–d14, incluyendo las dos condiciones de la línea 37) + 1</td><td class="center kpi">15</td></tr>
+<tr><td>3. Regiones</td><td>V(G) = caras del grafo conexo</td><td>14 caras acotadas + 1 exterior</td><td class="center kpi">15</td></tr>
+</tbody>
+</table>
+<p>Que salgan las tres es señal de que el grafo está bien construido. Una complejidad de 15 para una función de 30 líneas dice algo simple: <code>calc</code> hace demasiado. Cada <code>elif</code> amontona una decisión más en la misma función y todas las combinaciones posibles se prueban desde afuera.</p>
+
+<h2>4.3 Caminos independientes</h2>
+<p>Con V(G) = 15 hay 15 caminos linealmente independientes que recorren todas las decisiones al menos una vez. Esto es la base mínima para cubrir la estructura (cobertura de nodos garantizada):</p>
+<table class="matrix">
+<caption>Tabla 4.3 — Los 15 caminos independientes y el caso que los recorre</caption>
+<thead><tr><th>Camino</th><th>Recorrido (resumen)</th><th>Qué ejercita</th><th>Lo recorre</th></tr></thead>
+<tbody>
+<tr><td class="center">P1</td><td>1-2-4</td><td>peso ≤ 0 → excepción</td><td>CA-25 (−1 kg), CA-24 (0 kg)</td></tr>
+<tr><td class="center">P2</td><td>1-2-3-4</td><td>peso &gt; 50 → excepción</td><td>CA-26 (51 kg)</td></tr>
+<tr><td class="center">P3</td><td>1-2-3-5-6-10-11-16-18-20-22-25-27-29-30</td><td>tramo 1 · urbana · sin finde · normal · sin cupón</td><td>CA-01</td></tr>
+<tr><td class="center">P4</td><td>…-5-7-8-10-…-29-30</td><td>tramo 2</td><td>CA-04</td></tr>
+<tr><td class="center">P5</td><td>…-5-7-9-10-…-29-30</td><td>sobre L2 (else)</td><td>CA-07</td></tr>
+<tr><td class="center">P6</td><td>…-10-12-13-…-29-30</td><td>zona rural</td><td>CA-09</td></tr>
+<tr><td class="center">P7</td><td>…-10-12-14-15-…-29-30</td><td>zona nacional</td><td>CA-10</td></tr>
+<tr><td class="center">P8</td><td>…-16-17-…-29-30</td><td>recargo de fin de semana</td><td>CA-12, CA-13</td></tr>
+<tr><td class="center">P9</td><td>…-18-19-…-29-30</td><td>descuento frecuente</td><td>CA-14</td></tr>
+<tr><td class="center">P10</td><td>…-18-20-21-…-29-30</td><td>descuento VIP</td><td>CA-15</td></tr>
+<tr><td class="center">P11</td><td>…-22-23-24-…-29-30</td><td>cupón ENVIO10</td><td>CA-16, CA-17, CA-18</td></tr>
+<tr><td class="center">P12</td><td>…-22-23-25-…-29-30</td><td>cupón no válido (el heredado lo ignora)</td><td>CA-30</td></tr>
+<tr><td class="center">P13</td><td>…-22-25-…-29-30</td><td>sin cupón (rama falsa de d11)</td><td>CA-05, CA-13</td></tr>
+<tr><td class="center">P14</td><td>…-25-26-…-29-30</td><td>mínimo: t &lt; 5000 → t = 5000</td><td>CA-23</td></tr>
+<tr><td class="center">P15</td><td>…-27-28-29-30</td><td>flag = True → imprime «costo: …»</td><td>Ejecución manual <code>calc(2, 'urbana', 'normal', 2, flag=True)</code> → imprime <code>costo: 6000</code> y retorna 6000. (El flag se eliminó en v2.0.0.)</td></tr>
+</tbody>
+</table>
+
+<h2>4.4 Cobertura: sentencias y ramas</h2>
+<p><b>Sentencias.</b> La única línea que ningún caso de la suite ejecuta es la <b>64</b> (<code>print("costo:", t)</code>): la suite nunca llama con <code>flag=True</code>. Por tanto, cobertura de sentencias = 28/29 ≈ 96,6 % (pytest-cov con <code>--cov-branch</code> reporta 96 % total, con 1 sentencia sin cubrir y la rama correspondiente parcial). Lo reconfirmé con una ejecución manual: <code>costo: 6000</code>.</p>
+<p><b>Ramas.</b> Las 14 decisiones quedan ejercitadas en ambas direcciones, con una salvedad: el arco <code>flag → print</code> (27 → 28, rama verdadera de d14) no lo toma ningún caso. Tabla de rastreo de ramas:</p>
+<table>
+<caption>Tabla 4.4 — Qué caso cubre cada rama (v y f = verdadero / falso)</caption>
+<thead><tr><th>Decisión</th><th>Rama «v»</th><th>Rama «f»</th></tr></thead>
+<tbody>
+<tr><td>d1 · peso ≤ 0</td><td>CA-24, CA-25</td><td>CA-01… (todos los demás)</td></tr>
+<tr><td>d2 · peso &gt; 50</td><td>CA-26</td><td>CA-01… (todos los demás)</td></tr>
+<tr><td>d3 · p ≤ L1</td><td>CA-01…CA-04</td><td>CA-05… (p ≥ 10)</td></tr>
+<tr><td>d4 · p ≤ L2</td><td>CA-05, CA-06</td><td>CA-07, CA-08, CA-11, CA-31</td></tr>
+<tr><td>d5 · z == urbana</td><td>CA-01</td><td>CA-09</td></tr>
+<tr><td>d6 · z == rural</td><td>CA-09</td><td>CA-10, CA-27</td></tr>
+<tr><td>d7 · z == nacional</td><td>CA-10</td><td>CA-12, CA-27</td></tr>
+<tr><td>d8 · d &gt; 6</td><td>CA-13, CA-31, CA-32</td><td>CA-12 (d = 6, sábado)</td></tr>
+<tr><td>d9 · c == frecuente</td><td>CA-14</td><td>CA-01, CA-15</td></tr>
+<tr><td>d10 · c == vip</td><td>CA-15</td><td>CA-01, CA-14</td></tr>
+<tr><td>d11 · cup != None</td><td>CA-16, CA-30</td><td>CA-01, CA-13</td></tr>
+<tr><td>d12 · cup == ENVIO10</td><td>CA-16, CA-17, CA-18, CA-20, CA-21, CA-31</td><td>CA-30</td></tr>
+<tr><td>d13 · t &lt; 5000</td><td>CA-23</td><td>CA-01</td></tr>
+<tr><td>d14 · flag</td><td>(ninguno; ejecución manual)</td><td>todos los de la suite</td></tr>
+</tbody>
+</table>
+<div class="callout"><b>Veredicto caja blanca.</b> Cobertura de nodos: 30/30 con la suite más la ejecución manual de flag. Cobertura de arcos: 42/43 (solo falta 27 → 28 desde la suite automatizada). La suite cubre el 100 % de lo que la especificación exige ejercitar; el arco d14-true quedó documentado porque <code>flag</code> era parte del problema (ver DEF-06/ smells, revisión en la Parte 6) y se eliminó en v2.0.0. Tras la refactorización, <code>pytest-cov --cov-branch</code> reporta <b>100 %</b> de sentencias y ramas (ver Parte 5 y Parte 6).</div>

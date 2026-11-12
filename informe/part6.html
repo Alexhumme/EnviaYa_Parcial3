@@ -1,0 +1,87 @@
+
+<!-- ============================== 5. AUTOMATIZACIÓN Y DEFECTOS ============================== -->
+<h1 id="sec5">5. Automatización, ejecución y defectos <span class="small">· Parte 5 (0,8 pts)</span></h1>
+
+<h2>5.1 Automatización y primera ejecución contra el código heredado</h2>
+<p>Automaticé los 32 casos de la Parte 3 con pytest, parametrizando por IDs (CA-01…CA-32) en <code>tests/test_envios.py</code>. La regla era ejecutar <b>exactamente la suite descrita en el enunciado</b> contra el heredado, sin tocar <code>envios.py</code>. El resultado real de aquella primera corrida:</p>
+<div class="figure"><img src="assets/captura_pruebas_fallando.png" alt="Pytest contra el código heredado: 18 failed, 14 passed" style="width: 88%;"><div class="caption">Figura 5.1 — Corrida real contra el código heredado: 18 casos fallan, 14 pasan. Cobertura: 96 % (1 sentencia sin cubrir: la línea del print).</div></div>
+<p>De los 32 casos, los 18 que fallaban no eran fallas del cálculo: eran <b>exactamente</b> las desviaciones entre mi especificación y lo que el heredado hacía — los 6 defectos que reporto abajo, ejercitados desde varios ángulos (un mismo defecto se manifestaba en varios casos, p. ej. DEF-02 y DEF-06 en los mismos pedidos de sábado).</p>
+
+<h2>5.2 Cobertura medida con pytest-cov (sentencias y ramas)</h2>
+<p>Comando usado: <code>python -m pytest tests/ --cov=envios --cov-branch --cov-report=term-missing</code>.</p>
+<table>
+<caption>Tabla 5.1 — Cobertura antes y después de las correcciones/refactorización</caption>
+<thead><tr><th>Versión medida</th><th>Sentencias</th><th>Ramas</th><th>Resultado</th></tr></thead>
+<tbody>
+<tr><td>v1.0.0 (heredado)</td><td>29 stmts, 1 sin cubrir (línea 64, print) · <b>96 %</b></td><td>26 ramas, 1 parcial (arco flag→print) · <b>96 %</b></td><td><span class="tag tag-err">18 failed</span> · 14 passed</td></tr>
+<tr><td>v2.0.0 (corregido + refactorizado)</td><td>71 stmts, 0 sin cubrir · <b>100 %</b></td><td>20 ramas, 0 parciales · <b>100 %</b></td><td><span class="tag tag-ok">32 passed</span></td></tr>
+<tr><td>v2.1.0 (con empresarial)</td><td>75 stmts, 0 sin cubrir · <b>100 %</b></td><td>22 ramas, 0 parciales · <b>100 %</b></td><td><span class="tag tag-ok">40 passed</span></td></tr>
+</tbody>
+</table>
+
+<h2>5.3 Reporte de defectos</h2>
+<p>Formato de registro: ID, título, requisito que incumple, pasos para reproducir, esperado, obtenido, severidad y prioridad justificadas. Los valores obtenidos salen de ejecutar el heredado de verdad (lo reproduje con <code>python -c "import envios; envios.calc(...)"</code> para cada caso).</p>
+<table class="defects">
+<caption>Tabla 5.2 — Defectos encontrados en el código heredado respecto a mi especificación</caption>
+<thead><tr><th>ID</th><th>Título y requisito</th><th>Pasos para reproducir</th><th>Esperado / Obtenido</th><th>Severidad · Prioridad (justificación)</th></tr></thead>
+<tbody>
+<tr>
+  <td class="center"><b>DEF-01</b></td>
+  <td><b>Tramo 1 incluye el límite L1</b> · incumple R3 (D impar: peso &lt; 3)</td>
+  <td><code>calc(3, "urbana", "normal", 2)</code></td>
+  <td>$9.000 (tramo 2) → <b>obtuvo $6.000</b></td>
+  <td><b>Mayor · Media.</b> Solo afecta el peso exactamente 3,00 kg y paga de menos; no todos los pedidos caen ahí, por eso Media.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-02</b></td>
+  <td><b>Fin de semana solo el domingo</b> (<code>d &gt; 6</code>) · incumple R5</td>
+  <td><code>calc(4, "urbana", "normal", 6)</code></td>
+  <td>$11.000 (sábado + $2.000) → <b>obtuvo $9.000</b></td>
+  <td><b>Mayor · Alta.</b> Todo envío de sábado (1 de cada 2 días del finde) va sin recargo: sangría sistemática de $2.000 por envío.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-03</b></td>
+  <td><b>Fin de semana se cobra ANTES de los descuentos</b> · incumple R5 (E impar)</td>
+  <td><code>calc(4, "urbana", "frecuente", 7)</code></td>
+  <td>$10.600 ((9000·0,95)+2000, redondeado) → <b>obtuvo $10.400</b> ((9000+2000)·0,95 truncado)</td>
+  <td><b>Mayor · Alta.</b> Todo pedido con descuento en finde sale mal calculado; afecta justo a los clientes fidelizados.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-04</b></td>
+  <td><b>Cupón que no existe se ignora en silencio</b> · incumple R7 (F impar)</td>
+  <td><code>calc(4, "urbana", "normal", 2, "VERANO20")</code></td>
+  <td>ValueError("cupon no existe") → <b>obtuvo $9.000 sin error</b></td>
+  <td><b>Menor · Media.</b> Caso raro (cupón mal digitado), pero el cliente cree tener 10 % de descuento y no lo recibe sin aviso.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-05</b></td>
+  <td><b>No valida zona ni día</b> · incumple R2</td>
+  <td><code>calc(4, "insular", "normal", 2)</code> · <code>calc(4, "urbana", "normal", 0)</code> · <code>calc(4, "urbana", "normal", 8)</code></td>
+  <td>ValueError("zona invalida") / ValueError("dia invalido") → <b>obtuvo $9.000 / $9.000 / $11.000 sin error</b></td>
+  <td><b>Mayor · Alta.</b> Datos imposibles aceptados en silencio: p. ej. «Rural» con R mayúscula se cobra sin el 25 %; día 8 pasa como hábil; inconsistencia en los registros.</td>
+</tr>
+<tr>
+  <td class="center"><b>DEF-06</b></td>
+  <td><b>Redondeo trunca al múltiplo de $100</b> · incumple R8</td>
+  <td><code>calc(4, "rural", "normal", 2)</code></td>
+  <td>$11.300 (11.250 ↑ al $100) → <b>obtuvo $11.200</b></td>
+  <td><b>Menor · Media.</b> Sistemático y a favor de la empresa a costa del cliente (hasta −$99 por envío); mina la confianza.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="warn"><b>Cómo clasifiqué severidad y prioridad.</b> Severidad = impacto real en negocio/cliente (Mayor = cobra mal a muchos o sistemáticamente; Menor = caso borde o afectar el bolsillo poco). Prioridad = qué tan pronto había que corregirlo (Alta = sistemático o afecta a segmentos amplios; Media = caso borde). Por eso DEF-02/03/05 van prioridad Alta aunque ningún cálculo «explota». Ningún defecto se marcó como Crítica: no hay caídas ni pérdida de datos, solo cálculo incorrecto.</div>
+
+<h2>5.4 Métricas</h2>
+<table>
+<caption>Tabla 5.3 — Métricas del esfuerzo (heredado vs. corregido+refactorizado)</caption>
+<thead><tr><th>Métrica</th><th>Resultado</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr><td>% de casos que pasan (heredado)</td><td class="kpi">14/32 = 43,75 %</td><td>18 casos de caja negra fallando. Tras correcciones: 32/32 = 100 %. Tras la Parte 8: 40/40 = 100 %.</td></tr>
+<tr><td>Defectos por severidad</td><td class="kpi">Mayor 4 · Menor 2 · Crítica 0</td><td>Mayor: DEF-01, DEF-02, DEF-03, DEF-05 (66,7 %) · Menor: DEF-04, DEF-06 (33,3 %).</td></tr>
+<tr><td>Defectos por prioridad</td><td class="kpi">Alta 3 · Media 3</td><td>Alta: DEF-02, DEF-03, DEF-05 (66,7 %) · Media: DEF-01, DEF-04, DEF-06.</td></tr>
+<tr><td>Densidad de defectos</td><td class="kpi">20,7 / 100 líneas de código</td><td>6 defectos / 29 sentencias contadas por coverage.py. Método alternativo: 6 / 65 líneas físicas = 9,2 por 100 líneas físicas.</td></tr>
+<tr><td>Cobertura de sentencias</td><td class="kpi">96 % → 100 %</td><td>Heredado: 1 sentencia sin cubrir (print, línea 64). Final (v2.1.0): 75/75.</td></tr>
+<tr><td>Cobertura de ramas</td><td class="kpi">96 % → 100 %</td><td>Heredado: 1 rama parcial (arco flag→print). Final (v2.1.0): 0 parciales.</td></tr>
+</tbody>
+</table>

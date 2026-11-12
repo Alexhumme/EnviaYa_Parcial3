@@ -1,0 +1,64 @@
+
+<!-- ============================== 6. MANTENIMIENTO Y REFACTORIZACIÓN ============================== -->
+<h1 id="sec6">6. Mantenimiento y refactorización <span class="small">· Parte 6 (0,9 pts)</span></h1>
+
+<h2>6.1 Malos olores (code smells) detectados en v1.0.0</h2>
+<table class="matrix">
+<caption>Tabla 6.1 — Malos olores con nombre técnico y línea del código heredado</caption>
+<thead><tr><th>#</th><th>Mal olor (nombre técnico)</th><th>Línea v1.0.0</th><th>Deuda técnica que genera</th></tr></thead>
+<tbody>
+<tr><td class="center">1</td><td><b>Número mágico</b> (magic number) — PMAX = 50 quemado en la condición del peso</td><td>37</td><td>El valor de negocio máximo vive en la lógica, no en <code>CONFIG</code>: si la empresa cambia PMAX hay que editar la condición y se puede dejar desactualizada la doc; además nadie sabe qué significa «50» sin leer contexto.</td></tr>
+<tr><td class="center">2</td><td><b>Números mágicos de negocio</b> — tarifas 6000 / 9000 / 800 y porcentajes (0.05, 0.10)</td><td>39–44, 54–60</td><td>Remarketing de tarifas imposible sin tocar la función; cualquier ajuste comercial rompe la confianza de las pruebas; los cambios se hacen por «prueba y error» en producción.</td></tr>
+<tr><td class="center">3</td><td><b>Flag argument</b> (parámetro booleano <code>flag</code> con significado oculto)</td><td>36, 63–64</td><td>La función hace dos cosas (calcular y avisar); el booleano no se autodocumenta (¿flag qué?); quien la llama debe saber un secreto interno; dificulta probar «sin imprimir».</td></tr>
+<tr><td class="center">4</td><td><b>Variables de una letra</b> (<code>p, z, c, d, t</code>)</td><td>36–65</td><td>Lectura críptica; cualquier mantenedor reconstruye el significado con un mapa mental; sube el costo de cada cambio posterior.</td></tr>
+<tr><td class="center">5</td><td><b>Código muerto / no-op</b> (<code>t = t</code> en rama de zona urbana)</td><td>46</td><td>Ruido puro; hace dudar si falta un recargo o un comportamiento; rompe la lectura lineal «si → efecto».</td></tr>
+<tr><td class="center">6</td><td><b>Comparación con None con <code>!=</code></b> (en vez de <code>is not</code>)</td><td>58</td><td>Frágil ante cualquier objeto con <code>__eq__</code> rara y contradice la semántica de identidad de Python; invita a bugs sutiles al crecer el modelo.</td></tr>
+<tr><td class="center">7</td><td><b>Método largo / complejidad ciclomática 15</b> (<code>calc</code> monolítico)</td><td>36–65</td><td>Cada corrección obliga a entender 15 decisiones a la vez; el riesgo de regresión en cada toque es altísimo; revisión entre pares casi imposible.</td></tr>
+<tr><td class="center">8</td><td><b>Redondeo truncado como «regla oculta»</b> (<code>int(t / 100) * 100</code>)</td><td>65</td><td>Una decisión de negocio (cómo redondear) escondida en una expresión; nadie la ve al leer «costo»; reproduce DEF-06.</td></tr>
+<tr><td class="center">9</td><td><b>Efectos secundarios I/O en cálculo</b> (<code>print</code> dentro de la función)</td><td>63–64</td><td>Mezcla capas: el módulo no puede reusarse (API, batch, pruebas) sin ruido en consola o efectos parásitos; rompe la regla de una sola responsabilidad.</td></tr>
+</tbody>
+</table>
+
+<h2>6.2 ¿Qué tipo de mantenimiento es cada cambio?</h2>
+<table>
+<caption>Tabla 6.2 — Clasificación de los cambios según la taxonomía clásica (ISO/IEC 14764)</caption>
+<thead><tr><th>Tipo</th><th>Rama / cambio</th><th>Por qué</th></tr></thead>
+<tbody>
+<tr><td><b>Correctivo</b></td><td>fix/DEF-01…fix/DEF-06</td><td>Corrigen defectos que el software cometía frente a su propia especificación; no agregan funcionalidad ni adaptan a nada: devuelven al sistema a su comportamiento exigido (R1–R8).</td></tr>
+<tr><td><b>Perfectivo</b></td><td>refactor/estrategia (sin cambiar la especificación ni el comportamiento exigido)</td><td>Extraer funciones, constantes con nombre, patrón Estrategia, eliminar flag: misma salida para las mismas entradas válidas; mejora legibilidad, pruebas y economía de cambio sin añadir requisitos.</td></tr>
+<tr><td><b>Preventivo</b></td><td>test/suite, validación de entradas (DEF-05 como defensa), cobertura 100 %</td><td>Disminuyen la probabilidad de fallas futuras: una entrada imposible queda rechazada en la frontera antes de causar cálculos erróneos; la suite detecta cualquier ruptura en segundos.</td></tr>
+<tr><td><b>Adaptativo</b></td><td>feat/cliente-empresarial (Parte 8)</td><td>Adecúa el sistema a un negocio que cambió: un nuevo segmento de clientes (empresarial, 12 %) con una condición nueva (sin recargo de zona sobre L2). Es funcionalidad nueva motivada por el negocio, no una corrección.</td></tr>
+</tbody>
+</table>
+
+<h2>6.3 Refactorización aplicada</h2>
+<p>Cuatro compromisos concretos, en este orden:</p>
+<ol>
+<li><b>Extraer funciones</b>: de una función de 30 líneas a piezas con una sola responsabilidad — <code>validar_peso / validar_zona / validar_dia / validar_cupon</code>, <code>tarifa_por_peso</code>, <code>aplicar_recargo_zona</code>, <code>aplicar_descuentos</code>, <code>aplicar_fin_de_semana</code>, <code>redondear_100</code> y el orquestador <code>calcular_costo</code>.</li>
+<li><b>Números mágicos → constantes con nombre</b>: <code>TARIFA_TRAMO_1 = 6000</code>, <code>TARIFA_TRAMO_2 = 9000</code>, <code>RECARGO_KG_EXTRA = 800</code>, <code>COSTO_MINIMO = 5000</code>, <code>DESC_FRECUENTE = 0.05</code>, <code>DESC_CUPON = 0.10</code>, <code>CUPON_VALIDO = "ENVIO10"</code>, y PMAX entró a <code>CONFIG["PMAX"] = 50</code>. Quien lee el código ya no traduce números.</li>
+<li><b>Eliminar <code>flag</code></b>: el contrato queda <code>calcular_costo(peso, zona, cliente, dia, cupon=None)</code>; <code>calc</code> sobrevive como alias de compatibilidad <i>sin</i> flag, y la línea de <code>print</code> desapareció. Esto rompe la firma: por eso la versión pasa de 1.x a <b>2.0.0</b>.</li>
+<li><b>Patrón Estrategia para las zonas</b>: <code>EstrategiaZona</code> (abstracta) con <code>ZonaUrbana</code> (sin recargo), <code>ZonaRural</code> (×1,25) y <code>ZonaNacional</code> (×1,40), elegidas por un registro <code>ESTRATEGIAS_ZONA</code>. Agregar la próxima zona ya no toca ningún <code>elif</code>: se agrega una clase y una entrada al registro. Diagrama de clases:</li>
+</ol>
+<div class="figure"><img src="assets/uml_estrategia.png" alt="Diagrama UML del patrón Estrategia aplicado a las zonas" style="width: 88%;"><div class="caption">Figura 6.1 — Estrategia para el recargo por zona: la interfaz EstrategiaZona, sus tres implementaciones y el módulo que las usa vía ESTRATEGIAS_ZONA.</div></div>
+
+<h2>6.4 Corrección de todos los defectos reportados</h2>
+<p>Los seis defectos de la Parte 5 se corrigieron en su propia rama <code>fix/DEF-XX</code>, fusionada a main con <code>--no-ff</code> en este orden: DEF-01 (borde tramo 1) → DEF-02 (sábado) → DEF-03 (orden finde) → DEF-04 (cupón inexistente) → DEF-05 (validación zona/día) → DEF-06 (redondeo). Cada corrección dejó la suite algo más verde: al integrar DEF-06 ya pasaban 32/32. Ningún defecto quedó abierto ni «aceptado como limitación».</p>
+
+<h2>6.5 Pruebas de regresión</h2>
+<p>Después de las correcciones y del refactor ejecuté la misma suite completa; el resultado:</p>
+<div class="figure"><img src="assets/captura_pruebas_pasando.png" alt="Pytest tras corregir: 40 passed, cobertura 100 %" style="width: 80%;"><div class="caption">Figura 6.2 — Regresión completa en verde: 40/40 pruebas pasan (32 de la suite original + 8 de la Parte 8) y la cobertura queda en 100 % de sentencias y ramas.</div></div>
+<p class="small">Estrictamente como regresión del heredado, el umbral se verificó en v2.0.0 con 32/32 verdes y cobertura 100 % (ver tabla 5.1); la corrida de la figura incluye además las 8 pruebas de la solicitud de cambio de la Parte 8.</p>
+
+<h2>6.6 Antes y después</h2>
+<table>
+<caption>Tabla 6.3 — Comparación v1.0.0 → v2.0.0/2.1.0</caption>
+<thead><tr><th>Métrica</th><th>v1.0.0 (heredado)</th><th>v2.1.0</th><th>Lectura</th></tr></thead>
+<tbody>
+<tr><td>Complejidad ciclomática de la función principal (<code>calc</code>/<code>calcular_costo</code>)</td><td class="kpi">15</td><td class="kpi">2</td><td>El orquestador quedó plano; la decisión interna con más ramas es <code>aplicar_descuentos</code> (V=5, antes parte del 15). Por función: ninguna supera V=5.</td></tr>
+<tr><td>Líneas de código</td><td class="kpi">65 físicas (29 sentencias)</td><td class="kpi">157 físicas (75 sentencias)</td><td>Crece por validación explícita, clases de estrategia y el alias de compatibilidad — cambio deliberado y barato de leer, no duplicación.</td></tr>
+<tr><td>Cobertura de sentencias</td><td class="kpi">96 %</td><td class="kpi">100 %</td><td>Sin sentencias muertas; el print se eliminó con flag.</td></tr>
+<tr><td>Cobertura de ramas</td><td class="kpi">96 % (1 rama parcial)</td><td class="kpi">100 %</td><td>Ninguna rama sin probar.</td></tr>
+<tr><td>Parámetros de la función</td><td class="kpi">5 + flag oculta</td><td class="kpi">5 (sin flag)</td><td>Contrato explícito: peso, zona, cliente, día, cupón.</td></tr>
+<tr><td>Robustez ante entradas inválidas</td><td class="kpi">Solo peso</td><td class="kpi">Peso, zona, día, cupón</td><td>Toda entrada imposible lanza ValueError (R1, R2, R7).</td></tr>
+</tbody>
+</table>

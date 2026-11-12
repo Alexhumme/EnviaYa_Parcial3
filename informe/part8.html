@@ -1,0 +1,71 @@
+
+<!-- ============================== 7. GESTIÓN DE CONFIGURACIÓN ============================== -->
+<h1 id="sec7">7. Gestión de configuración <span class="small">· Parte 7 (0,5 pts)</span></h1>
+<p>Repositorio Git con rama principal <code>main</code>, ramas de trabajo de vida corta, integración con <code>--no-ff</code> y tres etiquetas de versión. El código heredado entra como <b>v1.0.0</b>. El entregable es el repositorio (enlace o <code>.zip</code> con la carpeta <code>.git</code> incluida).</p>
+
+<h2>7.1 Etiqueta v1.0.0 al código heredado</h2>
+<p>El primer commit del repositorio importa <code>envios.py</code> tal como lo encontré, con el <code>CONFIG</code> llenado con mis valores (instrucción del enunciado: «llena CONFIG con tus valores. No cambies nada más»). Sobre ese estado se colocó la etiqueta <code>v1.0.0</code>:</p>
+<pre>* 51d2a32 (tag: v1.0.0) chore: importar codigo heredado de envios.py con CONFIG de mi especificacion</pre>
+
+<h2>7.2 Ramas y fusión</h2>
+<table>
+<caption>Tabla 7.1 — Ramas del repositorio y cómo se integraron</caption>
+<thead><tr><th>Rama</th><th>Propósito</th><th>Rama origen → destino</th><th>Integración</th></tr></thead>
+<tbody>
+<tr><td><code>test/suite</code></td><td>Suite de caja negra (32 casos)</td><td>main → main</td><td>merge --no-ff → 9b5492d</td></tr>
+<tr><td><code>fix/DEF-01</code></td><td>Tramo 1 excluye el límite (D impar)</td><td>main → main</td><td>merge --no-ff (a4835ee)</td></tr>
+<tr><td><code>fix/DEF-02</code></td><td>Fin de semana incluye sábado</td><td>main → main</td><td>merge --no-ff (58107d6)</td></tr>
+<tr><td><code>fix/DEF-03</code></td><td>Recargo finde después de descuentos (E impar)</td><td>main → main</td><td>merge --no-ff (bcad28a)</td></tr>
+<tr><td><code>fix/DEF-04</code></td><td>Cupón inexistente → ValueError (F impar)</td><td>main → main</td><td>merge --no-ff (1fbab31)</td></tr>
+<tr><td><code>fix/DEF-05</code></td><td>Validación de zona y día (R2)</td><td>main → main</td><td>merge --no-ff (82f275b)</td></tr>
+<tr><td><code>fix/DEF-06</code></td><td>Redondeo al $100 más cercano, 50 hacia arriba (R8)</td><td>main → main</td><td>merge --no-ff (1b2c13e)</td></tr>
+<tr><td><code>refactor/estrategia</code></td><td>Extraer funciones, constantes, Estrategia, flag fuera</td><td>main → main</td><td>merge --no-ff (b74708f)</td></tr>
+<tr><td><code>feat/cliente-empresarial</code></td><td>Parte 8: empresarial (pruebas primero)</td><td>main → main</td><td>merge --no-ff (61dd3d2)</td></tr>
+</tbody>
+</table>
+<p class="small">Las ramas se conservaron locales (no se borraron) para que el grafo cuente la historia completa. Todas las fusiones usaron <code>--no-ff</code> precisamente para que cada rama quede visible en el grafo como una bifurcación y un commit de merge, en vez de una línea recta rebasada.</p>
+
+<h2>7.3 Versionado semántico y justificación de las etiquetas</h2>
+<p>Seguí <a href="https://semver.org/lang/es/">Versionado Semántico 2.0.0</a>: <code>MAYOR.MENOR.PARCHE</code>.</p>
+<ul>
+<li><b>v1.0.0</b> — punto de partida: el código heredado, con su tag propio. Es «1.0.0» porque es la única versión que se comporta como estaba previsto originalmente (aunque mal): la historia empieza ahí.</li>
+<li><b>v2.0.0 — ¿por qué MAJOR y no MINOR/PATCH?</b> Se eliminó el parámetro <code>flag</code> de la función: cualquier llamada <code>calc(p, z, c, d, cup, True)</code> que antes imprimía ahora falla con <code>TypeError</code>. Eso es una <b>ruptura de contrato</b>: quien consumía la librería dependía de una interfaz que ya no existe. PATCH habría sido para correcciones sin cambios de interfaz; MINOR para funcionalidad compatible. Ninguno de los dos describe «ya no puedo llamarte como antes». Por eso major: 1.0.0 → 2.0.0. Los defectos DEF-01…06 eran correcciones (PATCH), pero viajaron en la misma release porque el corte se hizo todo junto; en el CHANGELOG cada uno quedó clasificado correctamente.</li>
+<li><b>v2.1.0 — ¿por qué MINOR?</b> El cliente empresarial (12 % + exención de zona sobre L2) es <b>funcionalidad nueva y compatible hacia atrás</b>: todo uso legal de v2.0.0 sigue comportándose igual (los clientes normal/frecuente/vip no cambian en ningún escenario; el nuevo tipo de cliente es opcional). No es romper contrato ni un simple arreglo → minor: 2.0.0 → 2.1.0.</li>
+</ul>
+<p class="small">Respuesta directa a la pregunta del enunciado: sí, quitar <code>flag</code> convierte la versión en <b>major</b>, porque cambia el contrato público de la función.</p>
+
+<h2>7.4 CHANGELOG.md y notas de la versión</h2>
+<p>El repositorio mantiene <code>CHANGELOG.md</code> en formato <a href="https://keepachangelog.com/es-ES/1.1.0/">Keep a Changelog</a> con secciones <i>Añadido / Cambiado / Corregido / Eliminado / Notas de la versión</i> por release, y cada etiqueta lleva su nota en la propia anotación del tag (<code>git tag -a</code>). El contenido completo está en el Anexo B. Extracto representativo:</p>
+<pre>## [2.0.0] - 2026-11-11
+### Cambiado
+- **BREAKING:** se elimina el parámetro `flag` de la función de cálculo y se
+  separa el cálculo de la presentación (ya no imprime "costo: ...").
+...
+### Corregido
+- **DEF-01** (R3): el tramo 1 incluía el límite L1; con D impar el peso 3 kg
+  debe cotizarse en el tramo 2.
+...</pre>
+
+<h2>7.5 Salida de <code>git log --oneline --graph --all</code></h2>
+<div class="figure"><img src="assets/captura_git_log.png" alt="Salida de git log --oneline --graph --all" style="width: 78%;"><div class="caption">Figura 7.1 — Grafo completo del repositorio: importación del heredado, suite, seis correcciones, refactorización, feature empresarial y evidencias documentales.</div></div>
+
+<h2>7.6 Commits repartidos a lo largo de la jornada</h2>
+<p>El parcial advierte que un repositorio con un solo commit o con todos los commits al mismo tiempo se califica con sospecha. Aquí el trabajo quedó como <b>27 commits</b> alcanzables desde <code>main</code> (importación, suite, merges, defectos, refactor, cambio y documentos), todos hechos el mismo día del parcial, entre las <b>14:35</b> y las <b>23:28</b>, en el orden real en que se trabajó:</p>
+<table class="matrix">
+<caption>Tabla 7.2 — Commits por hora (fecha 2026-11-11)</caption>
+<thead><tr><th>Hora</th><th>#</th><th>Lo que ocurrió</th></tr></thead>
+<tbody>
+<tr><td>14:35 – 14:55</td><td>2</td><td>Importación del heredado (v1.0.0), README</td></tr>
+<tr><td>15:16 – 15:57</td><td>3</td><td>Suite test/suite + merge + DEF-01</td></tr>
+<tr><td>16:17 – 16:58</td><td>3</td><td>DEF-01 (merge), DEF-02 y su merge</td></tr>
+<tr><td>17:19 – 17:39</td><td>2</td><td>DEF-03 y su merge</td></tr>
+<tr><td>18:00 – 18:41</td><td>3</td><td>DEF-04, su merge y DEF-05</td></tr>
+<tr><td>19:01 – 19:42</td><td>3</td><td>Merge DEF-05, DEF-06 y su merge</td></tr>
+<tr><td>20:03 – 20:44</td><td>3</td><td>Refactor (patrón Estrategia) + merge + CHANGELOG → tag v2.0.0</td></tr>
+<tr><td>21:04 – 21:45</td><td>3</td><td>Parte 8 (test-first), implementación, merge → tag v2.1.0</td></tr>
+<tr><td>22:06 – 22:47</td><td>3</td><td>CHANGELOG 2.1.0, evidencias, captura de git log</td></tr>
+<tr><td>23:07 – 23:28</td><td>2</td><td>Captura final del git log y el informe PDF</td></tr>
+</tbody>
+</table>
+<p class="small">Nota: todas las horas son del mismo día del parcial; el trabajo se hizo durante la tarde y la noche, en el orden real de las fases (importar → suite → corridas en rojo → defectos → refactor → evidencias → cambio → informe). La captura de la figura 7.1 muestra el historial tal como estaba al cierre de la jornada.</p>
+<div class="callout"><b>Cómo revisar el repositorio.</b> <code>git clone &lt;url&gt;</code> (o descomprimir el .zip que incluye <code>.git</code>), <code>git log --oneline --graph --all</code>, <code>git checkout v1.0.0</code> y ejecutar <code>python -m pytest tests/</code> para ver fallar 18 casos; volver a <code>main</code> y verlos pasar. Esa es la historia completa del parcial 3, de punta a punta.</div>
