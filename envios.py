@@ -36,6 +36,7 @@ RECARGO_KG_EXTRA = 800       # por cada kg sobre L2, proporcional
 COSTO_MINIMO = 5000          # R8
 DESC_FRECUENTE = 0.05
 DESC_CUPON = 0.10
+DESC_EMPRESARIAL = 0.12      # cliente empresarial (solicitud de cambio #1)
 CUPON_VALIDO = "ENVIO10"
 REDONDEO_BASIS = Decimal("100")
 
@@ -113,6 +114,8 @@ def aplicar_descuentos(subtotal, cliente, cupon):
         subtotal -= subtotal * DESC_FRECUENTE
     elif cliente == "vip":
         subtotal -= subtotal * CONFIG["DESC_VIP"]
+    elif cliente == "empresarial":
+        subtotal -= subtotal * DESC_EMPRESARIAL
     if cupon == CUPON_VALIDO:
         subtotal -= subtotal * DESC_CUPON
     return subtotal
@@ -139,7 +142,9 @@ def calcular_costo(peso, zona, cliente, dia, cupon=None):
     validar_cupon(cupon)
 
     tarifa = tarifa_por_peso(peso)
-    con_zona = aplicar_recargo_zona(tarifa, zona)
+    # Solicitud de cambio #1: empresarial no cobra recargo de zona si peso > L2
+    exime_zona = cliente == "empresarial" and peso > CONFIG["L2"]
+    con_zona = tarifa if exime_zona else aplicar_recargo_zona(tarifa, zona)
     con_descuentos = aplicar_descuentos(con_zona, cliente, cupon)
     con_finde = aplicar_fin_de_semana(con_descuentos, dia)
 
